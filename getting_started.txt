@@ -5,8 +5,17 @@ Make sure the following dependencies are installed:
 
 To start a simulation, use these following steps:
 - open a terminal and type the following command
-    command
+	command
+	sudo ifconfig enx00e04c680f64 192.168.1.30 netmask 255.255.255.0
+
+	enx00e04c680f64 is the name of the ethernet cable ur5
 - open a second terminal ...
+	roslaunch ur_modern_driver ur5_bringup.launch robot_ip:=192.168.1.102 [reverse_port:=REVERSE_PORT]
+
+- open a third ...
+	roslaunch ur5_moveit_config ur5_moveit_planning_execution.launch limited:=true
+
+	opens a moveit screen of the ur5.
 
 
 
