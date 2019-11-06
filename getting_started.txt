@@ -20,4 +20,5 @@ To start a simulation, use these following steps:
 
 
 
-export ROS_PYTHON_VERSION=3
+# Use this command if an error occours while importing pyassimp
+pip install -U pyassimp
