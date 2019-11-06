@@ -11,4 +11,4 @@ To start a simulation, use these following steps:
 
 
 
-
+export ROS_PYTHON_VERSION=3
