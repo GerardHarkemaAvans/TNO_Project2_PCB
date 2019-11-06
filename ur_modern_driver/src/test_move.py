@@ -31,55 +31,12 @@ Q3 = [1.5,-0.2,-1.57,0,0,0]
     
 client = None
 
-def move1():
-    global joints_pos
-    g = FollowJointTrajectoryGoal()
-    g.trajectory = JointTrajectory()
-    g.trajectory.joint_names = JOINT_NAMES
-    try:
-        joint_states = rospy.wait_for_message("joint_states", JointState)
-        joints_pos = joint_states.position
-        g.trajectory.points = [
-            JointTrajectoryPoint(positions=joints_pos, velocities=[0]*6, time_from_start=rospy.Duration(0.0)),
-            JointTrajectoryPoint(positions=Q1, velocities=[0]*6, time_from_start=rospy.Duration(2.0)),
-            JointTrajectoryPoint(positions=Q2, velocities=[0]*6, time_from_start=rospy.Duration(3.0)),
-            JointTrajectoryPoint(positions=Q3, velocities=[0]*6, time_from_start=rospy.Duration(4.0))]
-        client.send_goal(g)
-        client.wait_for_result()
-    except KeyboardInterrupt:
-        client.cancel_goal()
-        raise
-    except:
-        raise
-
-def move_disordered():
-    order = [4, 2, 3, 1, 5, 0]
-    g = FollowJointTrajectoryGoal()
-    g.trajectory = JointTrajectory()
-    g.trajectory.joint_names = [JOINT_NAMES[i] for i in order]
-    q1 = [Q1[i] for i in order]
-    q2 = [Q2[i] for i in order]
-    q3 = [Q3[i] for i in order]
-    try:
-        joint_states = rospy.wait_for_message("joint_states", JointState)
-        joints_pos = joint_states.position
-        g.trajectory.points = [
-            JointTrajectoryPoint(positions=joints_pos, velocities=[0]*6, time_from_start=rospy.Duration(0.0)),
-            JointTrajectoryPoint(positions=q1, velocities=[0]*6, time_from_start=rospy.Duration(2.0)),
-            JointTrajectoryPoint(positions=q2, velocities=[0]*6, time_from_start=rospy.Duration(3.0)),
-            JointTrajectoryPoint(positions=q3, velocities=[0]*6, time_from_start=rospy.Duration(4.0))]
-        client.send_goal(g)
-        client.wait_for_result()
-    except KeyboardInterrupt:
-        client.cancel_goal()
-        raise
-    except:
-        raise
     
 def move_repeated():
     g = FollowJointTrajectoryGoal()
     g.trajectory = JointTrajectory()
     g.trajectory.joint_names = JOINT_NAMES
+    print "IM HERE!!"
     try:
         joint_states = rospy.wait_for_message("joint_states", JointState)
         joints_pos = joint_states.position
@@ -95,37 +52,6 @@ def move_repeated():
             g.trajectory.points.append(
                 JointTrajectoryPoint(positions=Q3, velocities=[0]*6, time_from_start=rospy.Duration(d)))
             d += 2
-        client.send_goal(g)
-        client.wait_for_result()
-    except KeyboardInterrupt:
-        client.cancel_goal()
-        raise
-    except:
-        raise
-
-def move_interrupt():
-    g = FollowJointTrajectoryGoal()
-    g.trajectory = JointTrajectory()
-    g.trajectory.joint_names = JOINT_NAMES
-    try:
-        joint_states = rospy.wait_for_message("joint_states", JointState)
-        joints_pos = joint_states.position
-        g.trajectory.points = [
-            JointTrajectoryPoint(positions=joints_pos, velocities=[0]*6, time_from_start=rospy.Duration(0.0)),
-            JointTrajectoryPoint(positions=Q1, velocities=[0]*6, time_from_start=rospy.Duration(2.0)),
-            JointTrajectoryPoint(positions=Q2, velocities=[0]*6, time_from_start=rospy.Duration(3.0)),
-            JointTrajectoryPoint(positions=Q3, velocities=[0]*6, time_from_start=rospy.Duration(4.0))]
-    
-        client.send_goal(g)
-        time.sleep(3.0)
-        print "Interrupting"
-        joint_states = rospy.wait_for_message("joint_states", JointState)
-        joints_pos = joint_states.position
-        g.trajectory.points = [
-            JointTrajectoryPoint(positions=joints_pos, velocities=[0]*6, time_from_start=rospy.Duration(0.0)),
-            JointTrajectoryPoint(positions=Q1, velocities=[0]*6, time_from_start=rospy.Duration(2.0)),
-            JointTrajectoryPoint(positions=Q2, velocities=[0]*6, time_from_start=rospy.Duration(3.0)),
-            JointTrajectoryPoint(positions=Q3, velocities=[0]*6, time_from_start=rospy.Duration(4.0))]
         client.send_goal(g)
         client.wait_for_result()
     except KeyboardInterrupt:
@@ -165,4 +91,5 @@ def main():
         rospy.signal_shutdown("KeyboardInterrupt")
         raise
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+	main()
