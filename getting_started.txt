@@ -1,0 +1,14 @@
+Make sure the following dependencies are installed:
+- pyyaml
+- rospkg
+
+
+To start a simulation, use these following steps:
+- open a terminal and type the following command
+    command
+- open a second terminal ...
+
+
+
+
+
