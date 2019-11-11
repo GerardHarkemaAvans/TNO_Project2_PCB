@@ -27,8 +27,6 @@ import moveit_commander
 import moveit_msgs.msg
 import geometry_msgs.msg
 from math import pi
-from std_msgs.msg import String
-from moveit_commander.conversions import pose_to_list
 
 
 
@@ -51,6 +49,20 @@ class MoveGroupPythonInteface(object):
         self.group = group
         self.display_trajectory_publisher = display_trajectory_publisher
 
+        # PRODUCT PARAMETERS----------
+        self.product_locations = [
+                            [.5, .5, .5], 
+                            [.4, .4, .4], 
+                            [.3, .3, .3],
+                        ]
+        self.place_locations = [
+                            [.5, .5, .4],
+                            [.5, .5, .4],
+                            [.5, .5, .4],
+                        ]
+        assert len(self.place_locations) == len(self.product_locations)
+        self.productcount = len(self.product_locations)
+
     def go_to_pose_goal(self, x, y, z, w=0):
         group = self.group
 
@@ -68,8 +80,11 @@ class MoveGroupPythonInteface(object):
         group.clear_pose_targets()
 
         # # Kunnen weg?
-        # current_pose = self.group.get_current_pose().pose
+        current_pose = self.group.get_current_pose().pose
         # return all_close(pose_goal, current_pose, 0.01)
+
+    def get_pose():
+        return self.group.get_current_pose().pose
 
 def temp():
     robot = MoveGroupPythonInteface()
