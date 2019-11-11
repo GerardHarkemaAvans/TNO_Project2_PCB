@@ -22,3 +22,7 @@ To start a simulation, use these following steps:
 
 # Use this command if an error occours while importing pyassimp
 pip install -U pyassimp
+
+# Use this command with the error
+   - "Could not find a package configuration file provided by "industrial_msgs""
+sudo apt install --reinstall ros-kinetic-industrial-msgs
