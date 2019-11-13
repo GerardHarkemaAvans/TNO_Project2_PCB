@@ -26,3 +26,10 @@ pip install -U pyassimp
 # Use this command with the error
    - "Could not find a package configuration file provided by "industrial_msgs""
 sudo apt install --reinstall ros-kinetic-industrial-msgs
+
+# Use this command with the error
+	- "The following packages have unmet dependencies:
+ libaria-dev : Depends: libaria2v5 (= 2.8.0+repack-1ubuntu2) but it is not going to be installed
+E: Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution).
+"
+sudo apt purge libaria-dev
