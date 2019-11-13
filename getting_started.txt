@@ -39,3 +39,6 @@ E: Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a s
 "
 sudo apt purge libaria-dev
 
+# How To Fix System Program Problem Detected In Ubuntu
+
+sudo rm /var/crash/*
