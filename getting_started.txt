@@ -1,7 +1,7 @@
 # Upload files on the collective git hub
  - git add /file.txt
  - git commit - m "message"
- - git pull
+ - git push
 
 Make sure the following dependencies are installed:
 - pyyaml
