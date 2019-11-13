@@ -42,3 +42,8 @@ sudo apt purge libaria-dev
 # How To Fix System Program Problem Detected In Ubuntu
 
 sudo rm /var/crash/*
+
+# To get the necessary dependencies of all current ros packages
+
+rosdep install --from-paths . --ignore-src --rosdistro kinetic
+
