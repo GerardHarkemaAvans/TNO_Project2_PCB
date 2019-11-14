@@ -9,7 +9,8 @@ Make sure the following dependencies are installed:
 
 install: 
 ros-kinetic-full
-sudo apt install ros-kinetic-moveit
+ros-kinetic-moveit
+ros-kinetic-franka-description
 
 
 
