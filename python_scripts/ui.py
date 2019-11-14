@@ -18,21 +18,18 @@ import sys
 
 class MES:
     def __init__(self):
-        False
-
         with open('./taken.txt', 'r') as file:
             self.inhoud = file.read()
-        raw_input("PRESS ENTER TO CONTINUE") # temp
         self.robot = MoveGroupPythonInteface()
 
     def go_to_cords(self):
         try:
-            values = [float(x.get()) for x in self.display]
+            values = [float(x.get().replace('pi', math.pi)) for x in self.display]
         except Exception:
             tkMessageBox.showerror('ERROR', 'Ongeldige coordinaten')
             return
-        x, y, z = values
-        self.robot.go_to_pose_goal(x, y, z)
+        x, y, z, w = values
+        self.robot.go_to_pose_goal(x, y, z, w)
 
     def execute_all(self):
         for taak in self.inhoud.split('\n'):
@@ -56,32 +53,43 @@ class MES:
                 tkMessageBox.showerror('ERROR', 'Devolgende regel is niet '
                     'herkend\n' + taak)
 
+    def get_pos(self):
+        pos = self.robot.group.get_current_pose()
+        tkMessageBox.showinfo('Position', str(pos.pose))
+
+        pass
+
     def window(self):
         root = Tk()
         root.title('PCB Picker')
 
         # HUIDIGE LOCATIE ----------------------------------------------------
-        Label(root, text='Huidige positie: ' + str((1,2,2))).grid(
-            columnspan=2, sticky=W)
+        Button(root, text='Get pos', command=self.get_pos).grid(sticky=W)
+        self.pos = StringVar(root)
+        Label(root, textvariable=self.pos).grid(column=1, sticky=W)
+        # Label(root, text='Huidige positie: ' + str((1,2,2))).grid(column=1,
+        #     sticky=W)
 
         # USER INPUT ---------------------------------------------------------
-        Label(root, text='Geef hier een input').grid(row=1, columnspan=2)
-        Label(root, text='x (groen)').grid(row=1, column=0, sticky=W)
-        Label(root, text='y (rood)').grid(row=2, column=0, sticky=W)
-        Label(root, text='z (blauw)').grid(row=3, column=0, sticky=W)
+        Label(root, text='Geef hier een input').grid(row=1, columnspan=2, 
+            sticky=W)
+        Label(root, text='x (groen)').grid(row=2, column=0, sticky=W)
+        Label(root, text='y (rood)').grid(row=3, column=0, sticky=W)
+        Label(root, text='z (blauw)').grid(row=4, column=0, sticky=W)
+        Label(root, text='w').grid(row=5, column=0, sticky=W)
         # Input boxes
-        self.display = [Entry(root) for i in range(3)]
-        [self.display[i].grid(row=i+1, column=1, sticky=W+E) for i in range(3)]
+        self.display = [Entry(root) for i in range(4)]
+        [self.display[i].grid(row=i+2, column=1, sticky=W+E) for i in range(4)]
         Button(root, text='Go To', command=self.go_to_cords).grid(
-            row=4, columnspan=2, sticky=W+E)
+            row=6, columnspan=2, sticky=W+E)
 
         # TAKEN OVERZICHT ----------------------------------------------------
         taken = self.inhoud.split('\n')
         for idx, taak in enumerate(taken):
             Label(root, bg='red', text=taak.replace('_', ' ').replace(
-                '-', ' ')).grid(row=5+idx, columnspan=2, sticky=W)
+                '-', ' ')).grid(row=7+idx, columnspan=2, sticky=W)
         Button(root, text='Execute All Tasks', command=self.execute_all).grid(
-            row=6+idx, columnspan=2, sticky=W+E)
+            row=8+idx, columnspan=2, sticky=W+E)
 
         root.mainloop()
 
@@ -101,11 +109,11 @@ def run_roslaunch2():
 def roslaunch_thread():
     thread1 = threading.Thread(target=run_roslaunch1)
     thread1.start()
-    time.sleep(5)
+    time.sleep(6)
 
     thread2 = threading.Thread(target=run_roslaunch2)
     thread2.start()
-    time.sleep(5)
+    time.sleep(3)
 
 
 def main():
