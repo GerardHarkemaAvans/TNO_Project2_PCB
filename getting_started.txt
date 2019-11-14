@@ -7,6 +7,11 @@ Make sure the following dependencies are installed:
 - pyyaml
 - rospkg
 
+install: 
+ros-kinetic-full
+sudo apt install ros-kinetic-moveit
+
+
 
 To start a simulation, use these following steps:
 - open a terminal and type the following command
