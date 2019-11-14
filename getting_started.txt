@@ -13,6 +13,10 @@ ros-kinetic-moveit
 ros-kinetic-franka-description
 
 
+To install for PANDA:
+ - Todo
+
+
 
 To start a simulation, use these following steps:
 - open a terminal and type the following commands
@@ -52,6 +56,11 @@ sudo rm /var/crash/*
 rosdep install --from-paths . --ignore-src --rosdistro kinetic
 
 
-# temp
+# temp ----------------------------------------
 ## kijk of hiermee panda in gazebo kan
 https://github.com/erdalpekel/panda_simulation
+
+Buidling frankaemika from source
+https://frankaemika.github.io/docs/installation_linux.html
+
+
