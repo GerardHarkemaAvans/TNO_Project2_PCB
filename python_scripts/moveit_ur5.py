@@ -31,14 +31,17 @@ from math import pi
 
 
 class MoveGroupPythonInteface(object):
-    def __init__(self):
+    def __init__(self, robot_name):
         super(MoveGroupPythonInteface, self).__init__()
         moveit_commander.roscpp_initialize(sys.argv)
         rospy.init_node('move_group_python_interface_tutorial',
                         anonymous=True)
         robot = moveit_commander.RobotCommander()
         scene = moveit_commander.PlanningSceneInterface()
-        group_name = "manipulator"
+        if robot_name == 'ur5':
+            group_name = "manipulator"
+        elif robot_name == 'panda':
+            group_name = 'panda_arm'
         group = moveit_commander.MoveGroupCommander(group_name)
         display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
                                                        moveit_msgs.msg.DisplayTrajectory,

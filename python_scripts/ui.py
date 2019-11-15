@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from moveit_ur5 import MoveGroupPythonInteface
-import threading
 import geometry_msgs.msg
 import moveit_commander
 import moveit_msgs.msg
@@ -16,11 +15,24 @@ import time
 import sys
 
 
+'''
+Packages voor franka:
+    franka_gazebo
+    libfranka
+    panda_moveit_config
+    panda_simulation
+
+
+
+'''
+
+
 class MES:
-    def __init__(self):
+    def __init__(self, robot_name):
         with open('./taken.txt', 'r') as file:
             self.inhoud = file.read()
-        self.robot = MoveGroupPythonInteface()
+
+        self.robot = MoveGroupPythonInteface(robot_name)
 
     def go_to_cords(self):
         try:
@@ -96,13 +108,20 @@ class MES:
 
 
 def run_roslaunch1():
-    process = subprocess.Popen('roslaunch ur_gazebo ur5.launch'.split(' '))
+    if panda:
+        command = 'roslaunch panda_moveit_config demo.launch'
+    if ur5:
+        command = 'roslaunch ur_gazebo ur5.launch'
+    process = subprocess.Popen(command.split(' '))
     process.communicate()
 
 
 def run_roslaunch2():
-    process = subprocess.call(
-        'roslaunch ur5_moveit_config ur5_moveit_planning_execution.launch sim:=true limited:=true'.split(' '))
+    if panda:
+        command = 'rosrun moveit_commander moveit_commander_cmdline.py'
+    if ur5:
+        command = 'roslaunch ur5_moveit_config ur5_moveit_planning_execution.launch sim:=true limited:=true'
+    process = subprocess.call(command.split(' '))
     process.communicate()
 
 
@@ -113,15 +132,25 @@ def roslaunch_thread():
 
     thread2 = threading.Thread(target=run_roslaunch2)
     thread2.start()
-    time.sleep(3)
+    time.sleep(5)
 
 
 def main():
-    resp = raw_input("open 'roslaunch ur_gazebo ur5.launch'? ")
+    global ur5, panda
+    ur5, panda = False, False
+    robot_name = raw_input("[ur5] or [panda]: ")
+    if robot_name not in ['ur5', 'panda']:
+        raise NameError('robot not regocnized')
+    if robot_name == 'ur5':
+        ur5 = True
+    if robot_name == 'panda':
+        panda = True
+
+    resp = raw_input("open 'roslaunch files? y/[n]: ")
     if resp.lower() in ['y', 'j', 'yes', 'ja']:
         roslaunch_thread()
 
-    app = MES()
+    app = MES(robot_name)
     app.window()
 
 
