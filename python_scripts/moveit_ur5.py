@@ -66,15 +66,11 @@ class MoveGroupPythonInteface(object):
         assert len(self.place_locations) == len(self.product_locations)
         self.productcount = len(self.product_locations)
 
-    def go_to_pose_goal(self, x, y, z, w=0):
+    def go_to_pose_goal(self, x, y, z, rx=pi, ry=0, rz=0):
         group = self.group
 
-        pose_goal = geometry_msgs.msg.Pose()
-        pose_goal.orientation.w = w
-        pose_goal.position.x = x
-        pose_goal.position.y = y
-        pose_goal.position.z = z
-        group.set_pose_target(pose_goal)
+        coords = [x, y, z, rx, ry, rz]
+        group.set_pose_target(coords)
 
         ## Now, we call the planner to compute the plan and execute it.
         plan = group.go(wait=True)
@@ -88,6 +84,19 @@ class MoveGroupPythonInteface(object):
 
     def get_pose():
         return self.group.get_current_pose().pose
+
+    def go_to_home(self):
+        joint_goal = self.group.get_current_joint_values()
+        print(joint_goal)
+        joint_goal[0] = 0
+        joint_goal[1] = 0
+        joint_goal[2] = 0
+        joint_goal[3] = 0
+        joint_goal[4] = 0
+        joint_goal[5] = 0
+
+        self.group.go(joint_goal, wait=True)
+        self.group.stop()
 
 def temp():
     robot = MoveGroupPythonInteface()
