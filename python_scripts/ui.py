@@ -57,20 +57,16 @@ class MES:
 
     def execute_all(self):
         for i, taak in enumerate(self.inhoud.split('\n')):
+            Label(self.root, bg='red', text=taak.replace('_', ' ').replace(
+                '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
+
+        for i, taak in enumerate(self.inhoud.split('\n')):
             x = self.robot.group.get_current_pose().pose.position.x
             y = self.robot.group.get_current_pose().pose.position.y
             z = self.robot.group.get_current_pose().pose.position.z
             if taak.startswith('go_product'):
-                if np.round(x, 1) == 0.8 and np.round(y, 1) == 0.2 and\
-                        np.round(z, 1) == 0.0:
-                    print('NO GOOD!!')
-                    break
-                    # temp
-                else:
-                    print('NIET IN UR5 BEGIN POSITIE')
-
                 Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
-                    '-', ' ')).grid(row=7+i, columnspan=2, sticky=W+E)
+                    '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
                 time.sleep(0.01)
                 # START BY GOING TO 50 CM HEIGHT -----------------------------
                 if np.round(z, 3) != 0.5:
@@ -87,11 +83,10 @@ class MES:
                 # And go down now
                 self.robot.go_to_pose_goal(x_place, y_place, z_place, self.rx, 
                     self.ry, self.rz)
-            
-            
+
             elif taak.startswith('go_placeloc'):
                 Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
-                    '-', ' ')).grid(row=7+i, columnspan=2, sticky=W+E)
+                    '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
                 time.sleep(0.02)
                 if np.round(z, 3) != 0.5:
                     self.robot.go_to_pose_goal(x, y, 0.5, self.rx, self.ry, 
@@ -109,13 +104,13 @@ class MES:
                 tkMessageBox.showerror('ERROR', 'Devolgende regel is niet '
                     'herkend\n' + taak)
             Label(self.root, bg='green', text=taak.replace('_', ' ').replace(
-                '-', ' '), fg='white').grid(row=7+i, columnspan=2, sticky=W+E)
+                '-', ' '), fg='white').grid(row=9+i, columnspan=2, sticky=W+E)
         # End by going up
         x = self.robot.group.get_current_pose().pose.position.x
         y = self.robot.group.get_current_pose().pose.position.y
         z = self.robot.group.get_current_pose().pose.position.z
         if np.round(z, 3) != 0.5:
-            self.robot.go_to_pose_goal(x, y, 0.5)
+            self.robot.go_to_pose_goal(x, y, 0.5, self.rx, self.ry, self.rz)
 
 
     def execute_all_thread(self):
@@ -207,16 +202,20 @@ def main():
     # robot_name = 'panda'
 
     if robot_name not in ['ur5', 'panda']:
-        raise NameError('robot not regocnized')
+        print('Bad input')
+        return
     if robot_name == 'ur5':
         ur5 = True
     if robot_name == 'panda':
         panda = True
 
     resp = 'j'
-    resp = raw_input("open 'roslaunch files? y/[n]: ")
+    resp = raw_input("open 'roslaunch files? Y/[N]: ")
     if resp.lower() in ['y', 'j', 'yes', 'ja']:
         roslaunch_thread()
+    elif resp.lower() not in ['n', 'no', 'ne', 'nee']:
+        print('Bad input')
+        return
 
     app = MES(robot_name)
     app.window()

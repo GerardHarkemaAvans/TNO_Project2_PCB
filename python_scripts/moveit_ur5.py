@@ -54,14 +54,14 @@ class MoveGroupPythonInteface(object):
 
         # PRODUCT PARAMETERS----------
         self.product_locations = [
-                            [.5, .5, .1], 
-                            [.4, .4, .1], 
-                            [.3, .3, .1],
+                            [.5, .5, 0.1], 
+                            [.4, .4, 0.1], 
+                            [.3, .3, 0.1],
                         ]
         self.place_locations = [
-                            [.2, .6, .1],
-                            [.2, .6, .1],
-                            [.2, .6, .1],
+                            [.2, .6, 0.1],
+                            [.2, .6, 0.1],
+                            [.2, .6, 0.1],
                         ]
         assert len(self.place_locations) == len(self.product_locations)
         self.productcount = len(self.product_locations)
