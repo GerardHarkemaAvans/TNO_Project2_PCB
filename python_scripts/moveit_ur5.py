@@ -1,25 +1,5 @@
 #!/usr/bin/env python
 
-'''
-NOTES! 
-Voor dit bestand uitgevoerd kan worden moet er eest in een ander terminal hetvolgende uitgevoerd worden:
-roslaunch ur5_moveit_config demo.launch
-    Dit bestand is opgeslagen in 
-    /opt/ros/kinetic/share
-
-
-
-/ur5_moveit_config/config/ur5.srdf
-
-
-
-Om ur5 te openen in gazebo gooi deze commands in 2 terminals (en open vervolgens dit script in een 3e): 
-roslaunch ur_gazebo ur5.launch
-roslaunch ur5_moveit_config ur5_moveit_planning_execution.launch sim:=true limited:=true
-
-
-
-'''
 import sys
 import time
 import copy
@@ -39,11 +19,14 @@ class MoveGroupPythonInteface(object):
                         anonymous=True)
         self.robot = moveit_commander.RobotCommander()
         self.scene = moveit_commander.PlanningSceneInterface()
+        self.robot_name = robot_name
         time.sleep(.5)
         if robot_name == 'ur5':
             group_name = "manipulator"
         elif robot_name == 'panda':
             group_name = 'panda_arm'
+        # else:
+        #     print(robot_name + ' not regocnized')
         self.group = moveit_commander.MoveGroupCommander(group_name)
         self.display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
                                                        moveit_msgs.msg.DisplayTrajectory,
@@ -86,16 +69,25 @@ class MoveGroupPythonInteface(object):
         joint_goal[1] = -.977
         self.group.go(joint_goal, wait=True)
 
+        if self.robot_name == 'ur5':
+            p = moveit_commander.PoseStamped()
+            p.header.frame_id = self.robot.robot.get_planning_frame()
+            p.pose.position.x = 0
+            p.pose.position.y = 0
+            p.pose.position.z = 1
+            self.scene.add_box('Ground', p, (2,2,.15))
+            print('Box added')
+
         joint_goal = self.group.get_current_joint_values()
         joint_goal[0] = .63
         joint_goal[2] = .609
         self.group.go(joint_goal, wait=True)
 
-        joint_goal = self.group.get_current_joint_values()
-        joint_goal[3] = 5.07
-        joint_goal[4] = 4.712
-        joint_goal[5] = -2.511
-        self.group.go(joint_goal, wait=True)
+        # joint_goal = self.group.get_current_joint_values()
+        # joint_goal[3] = 5.07
+        # joint_goal[4] = 4.712
+        # joint_goal[5] = -2.511
+        # self.group.go(joint_goal, wait=True)
 
         self.group.stop()
 

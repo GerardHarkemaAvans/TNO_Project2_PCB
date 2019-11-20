@@ -17,19 +17,6 @@ import time
 import sys
 
 
-'''
-Packages voor franka:
-    franka_gazebo
-    libfranka
-    panda_moveit_config
-    panda_simulation
-
-
-To start panda simulation in rviz:
-roslaunch panda_moveit_config demo.launch
-'''
-
-
 class MES:
     def __init__(self, robot_name):
         with open('./taken.txt', 'r') as file:
@@ -216,22 +203,22 @@ def roslaunch_thread():
 def main():
     global ur5, panda
     ur5, panda = False, False
-    robot_name = 'ur5'  # for faster startup
-    # robot_name = raw_input("[ur5] or [panda]: ")
+    robot_name = raw_input("[ur5] or [panda]: ")
 
     ## For debugging
-    robot_name = 'ur5'
-    robot_name = 'panda'
+    # robot_name = 'ur5'
+    # robot_name = 'panda'
 
-    if robot_name not in ['ur5', 'panda']:
+    if robot_name.lower() in ['ur5', 'u']:
+        robot_name = 'ur5'
+        ur5 = True
+    elif robot_name.lower() in ['panda', 'p']:
+        robot_name = 'panda'
+        panda = True
+    else:
         print('Bad input')
         return
-    if robot_name == 'ur5':
-        ur5 = True
-    if robot_name == 'panda':
-        panda = True
 
-    resp = 'j'
     resp = raw_input("open 'roslaunch files? Y/[N]: ")
     if resp.lower() in ['y', 'j', 'yes', 'ja']:
         roslaunch_thread()
