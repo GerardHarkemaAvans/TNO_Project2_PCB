@@ -70,13 +70,15 @@ class MoveGroupPythonInteface(object):
         self.group.go(joint_goal, wait=True)
 
         if self.robot_name == 'ur5':
-            p = moveit_commander.PoseStamped()
-            p.header.frame_id = self.robot.robot.get_planning_frame()
-            p.pose.position.x = 0
-            p.pose.position.y = 0
-            p.pose.position.z = 1
-            self.scene.add_box('Ground', p, (2,2,.15))
-            print('Box added')
+            pass
+            ## todo dit nog werkend krijgen - lijkt erop alsof de box niet goed toegevoegd is
+            # p = moveit_commander.PoseStamped()
+            # p.header.frame_id = self.robot.get_planning_frame()
+            # p.pose.position.x = 0
+            # p.pose.position.y = 0
+            # p.pose.position.z = 1
+            # self.scene.add_box('Ground', p, (2,2,.15))
+            # print('Box added')
 
         joint_goal = self.group.get_current_joint_values()
         joint_goal[0] = .63
