@@ -53,7 +53,7 @@ class MES:
         self.robot.go_to_pose_goal(x, y, z, rx, ry, rz)
 
     def go_home_position(self):
-        self.robot.go_to_home()
+        self.robot.go_to_pose_goal(.5, .5, .5, np.pi, np.pi/2, 0)
 
     def execute_all(self):
         for i, taak in enumerate(self.inhoud.split('\n')):

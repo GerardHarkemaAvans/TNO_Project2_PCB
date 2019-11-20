@@ -1,10 +1,4 @@
 go_product-1
-go_up
 go_placeloc-1
-go_up
 go_product-2
-go_up
 go_placeloc-2
-go_product-3
-go_up
-go_placeloc-3
