@@ -9,6 +9,7 @@ import tkMessageBox
 import numpy as np
 import subprocess
 import threading
+import random
 import rospy
 import copy
 import math
@@ -51,10 +52,6 @@ class MES:
         x, y, z, rx, ry, rz = values
         print('Received ', values)
         self.robot.go_to_pose_goal(x, y, z, rx, ry, rz)
-
-    def go_home_position(self):
-        # self.robot.go_to_pose_goal(.5, .5, .5, np.pi, np.pi/2, 0)
-        self.robot.go_to_joint_state()
 
     def execute_all(self):
         for i, taak in enumerate(self.inhoud.split('\n')):
@@ -124,14 +121,25 @@ class MES:
         pos2 = self.robot.group.get_current_joint_values()
         print(pos2)
         tkMessageBox.showinfo('Joint Values', str(pos2))
-        
+
+    def add_objects(self):
+        name = str(random.random())
+        x, y, z, dx, dy, dz = [x.get() for x in self.boxcoords]
+        p = moveit_commander.PoseStamped()
+        p.header.frame_id = self.robot.robot.get_planning_frame()
+        p.pose.position.x = float(x)
+        p.pose.position.y = float(y)
+        p.pose.position.z = float(z)
+        self.robot.scene.add_box(name, p, (float(dx), float(dy), float(dz)))
+        time.sleep(.5)
 
     def window(self):
         self.root = Tk()
         self.root.title('PCB Picker')
 
         # HUIDIGE LOCATIE ----------------------------------------------------
-        Button(self.root, text='Go Home', command=self.go_home_position).grid(sticky=W+E)
+        Button(self.root, text='Go Home', command=self.robot.go_to_joint_state).grid(
+            sticky=W+E)
         Button(self.root, text='Get pos', command=self.get_pos).grid(
             sticky=W, row=0, column=1)
         self.pos = StringVar(self.root)
@@ -159,7 +167,16 @@ class MES:
                 '-', ' ')).grid(row=9+idx, columnspan=2, sticky=W+E)
         Button(self.root, text='Execute All Tasks', command=
             self.execute_all_thread).grid(row=10+idx, columnspan=2, sticky=W+E)
-        self.root.lift()
+
+        # BOXEN TOEVOEGEN ----------------------------------------------------
+        Label(self.root, text='Box toevoegen').grid(row=11+idx, sticky=W, 
+            columnspan=2)
+        for idx2, elem in enumerate(['x', 'y', 'z', 'dx', 'dy', 'dz']):
+            Label(self.root, text=elem).grid(row=12+idx+idx2, sticky=W)
+        self.boxcoords = [Entry(self.root) for i in range(6)]
+        [self.boxcoords[idx2].grid(row=12+idx+idx2, column=1) for idx2 in range(6)]
+        Button(self.root, text='Toevoegen', command=self.add_objects).grid(
+            row=13+idx+idx2, columnspan=2, sticky=W+E)
         self.root.mainloop()
 
 
@@ -204,7 +221,7 @@ def main():
 
     ## For debugging
     robot_name = 'ur5'
-    # robot_name = 'panda'
+    robot_name = 'panda'
 
     if robot_name not in ['ur5', 'panda']:
         print('Bad input')

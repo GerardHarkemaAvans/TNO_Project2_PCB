@@ -21,6 +21,7 @@ roslaunch ur5_moveit_config ur5_moveit_planning_execution.launch sim:=true limit
 
 '''
 import sys
+import time
 import copy
 import rospy
 import moveit_commander
@@ -36,23 +37,17 @@ class MoveGroupPythonInteface(object):
         moveit_commander.roscpp_initialize(sys.argv)
         rospy.init_node('move_group_python_interface_tutorial',
                         anonymous=True)
-        robot = moveit_commander.RobotCommander()
-        scene = moveit_commander.PlanningSceneInterface()
-        rospy.sleep(.5)
+        self.robot = moveit_commander.RobotCommander()
+        self.scene = moveit_commander.PlanningSceneInterface()
+        time.sleep(.5)
         if robot_name == 'ur5':
             group_name = "manipulator"
         elif robot_name == 'panda':
             group_name = 'panda_arm'
-        group = moveit_commander.MoveGroupCommander(group_name)
-        display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
+        self.group = moveit_commander.MoveGroupCommander(group_name)
+        self.display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
                                                        moveit_msgs.msg.DisplayTrajectory,
                                                        queue_size=20)
-        self.box_name = ''
-        self.robot = robot
-        self.scene = scene
-        self.group = group
-        self.display_trajectory_publisher = display_trajectory_publisher
-
         # PRODUCT PARAMETERS----------
         self.product_locations = [
                             [-.4, .4, 0.1], 
@@ -66,14 +61,6 @@ class MoveGroupPythonInteface(object):
                         ]
         assert len(self.place_locations) == len(self.product_locations)
         self.productcount = len(self.product_locations)
-
-    def add_objects(self):
-        p = moveit_commander.PoseStamped()
-        p.header.frame_id = self.robot.get_planning_frame()
-        p.pose.position.x = 0.
-        p.pose.position.y = 0.
-        p.pose.position.z = 0.
-        self.scene.add_box("table", p, (0.5, 1.5, 0.6))
 
     def go_to_pose_goal(self, x, y, z, rx=pi, ry=0, rz=0):
         group = self.group
@@ -102,6 +89,9 @@ class MoveGroupPythonInteface(object):
         joint_goal = self.group.get_current_joint_values()
         joint_goal[0] = .63
         joint_goal[2] = .609
+        self.group.go(joint_goal, wait=True)
+
+        joint_goal = self.group.get_current_joint_values()
         joint_goal[3] = 5.07
         joint_goal[4] = 4.712
         joint_goal[5] = -2.511
