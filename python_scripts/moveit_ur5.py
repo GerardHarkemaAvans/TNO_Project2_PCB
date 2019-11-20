@@ -85,18 +85,20 @@ class MoveGroupPythonInteface(object):
     def get_pose():
         return self.group.get_current_pose().pose
 
-    def go_to_home(self):
-        joint_goal = self.group.get_current_joint_values()
-        print(joint_goal)
-        joint_goal[0] = 0
-        joint_goal[1] = 0
-        joint_goal[2] = 0
-        joint_goal[3] = 0
-        joint_goal[4] = 0
-        joint_goal[5] = 0
+    def go_to_joint_state(self):
+        group = self.group
+        joint_goal = group.get_current_joint_values()
+        joint_goal[0] = .63
+        joint_goal[1] = -.977
+        joint_goal[2] = .609
+        joint_goal[3] = 5.07
+        joint_goal[4] = 4.712
+        joint_goal[5] = -2.511
 
-        self.group.go(joint_goal, wait=True)
-        self.group.stop()
+        group.go(joint_goal, wait=True)
+
+        group.stop()
+
 
 def temp():
     robot = MoveGroupPythonInteface()
