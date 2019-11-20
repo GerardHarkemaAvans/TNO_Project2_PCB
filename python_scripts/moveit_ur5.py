@@ -94,7 +94,6 @@ class MoveGroupPythonInteface(object):
         joint_goal[3] = 5.07
         joint_goal[4] = 4.712
         joint_goal[5] = -2.511
-
         group.go(joint_goal, wait=True)
 
         group.stop()

@@ -53,7 +53,8 @@ class MES:
         self.robot.go_to_pose_goal(x, y, z, rx, ry, rz)
 
     def go_home_position(self):
-        self.robot.go_to_pose_goal(.5, .5, .5, np.pi, np.pi/2, 0)
+        # self.robot.go_to_pose_goal(.5, .5, .5, np.pi, np.pi/2, 0)
+        self.robot.go_to_joint_state()
 
     def execute_all(self):
         for i, taak in enumerate(self.inhoud.split('\n')):
@@ -120,6 +121,10 @@ class MES:
     def get_pos(self):
         pos = self.robot.group.get_current_pose()
         tkMessageBox.showinfo('Position', str(pos.pose))
+        pos2 = self.robot.group.get_current_joint_values()
+        print(pos2)
+        tkMessageBox.showinfo('Joint Values', str(pos2))
+        
 
     def window(self):
         self.root = Tk()
@@ -195,10 +200,10 @@ def main():
     global ur5, panda
     ur5, panda = False, False
     robot_name = 'ur5'  # for faster startup
-    robot_name = raw_input("[ur5] or [panda]: ")
+    # robot_name = raw_input("[ur5] or [panda]: ")
 
     ## For debugging
-    # robot_name = 'ur5'
+    robot_name = 'ur5'
     # robot_name = 'panda'
 
     if robot_name not in ['ur5', 'panda']:
