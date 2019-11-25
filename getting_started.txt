@@ -55,6 +55,35 @@ sudo rm /var/crash/*
 # To get the necessary dependencies of all current ros packages
 rosdep install --from-paths . --ignore-src --rosdistro kinetic
 
+# ---------------------------------------------------------
+# How to get the real Robotiq gripper to move:
+
+#To control the gripper over a serial port, you may need to give proper privileges to the user:
+	"sudo usermod -a -G dialout YOURUSERNAME"
+#YOURUSERNAME is for exampel dca or gerard.
+#To find out the port on which the gripper is connected, use:
+	"dmesg | grep tty"
+#It's probably something like ttyUSB0.
+
+#Now make sure a roscore is started!
+
+#Get in the robotiq folder: "TNO_Project2_PCB/robotiq/robotiq_2f_gripper_control/nodes"
+#In this folder there is a python script, which will probably connect the robotiq gripper to the usbtty0 in your /dev/
+
+#This file is called: 'Robotiq2FGripperRtuNode.py'
+
+#Run:
+	"python Robotiq2FGripperRtuNode.py /dev/ttyUSB0"
+#The driver listens for messages on "Robotiq2FGripperRobotOutput" using the "Robotiq2FGripper_robot_output" msg type. 
+#The messages are interpreted and commands are sent to the gripper accordingly. 
+#A simple controller node is provided which can be run (in another terminal) using "rosrun robotiq_2f_gripper_control Robotiq2FGripperSimpleController.py"
+
+#Now open a new Terminal!
+
+#The driver listens for messages on "Robotiq2FGripperRobotOutput" using the "Robotiq2FGripper_robot_output" msg type. The messages are interpreted and commands are sent to the gripper accordingly. A simple controller node is provided which can be run (in another terminal) using 
+	"rosrun robotiq_2f_gripper_control Robotiq2FGripperSimpleController.py"
+
+Press 'a' to activate the gripper.
 
 # temp ----------------------------------------
 ## kijk of hiermee panda in gazebo kan
