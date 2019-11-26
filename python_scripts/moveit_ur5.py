@@ -33,12 +33,12 @@ class MoveGroupPythonInteface(object):
                                                        queue_size=20)
         # PRODUCT PARAMETERS----------
         self.product_locations = [
-                            [-.4, .4, 0.1], 
-                            [-.5, .3, 0.1], 
-                            [-.57, .17, 0.1],
+                            [.4, .4, 0.13], 
+                            [.5, .3, 0.13], 
+                            [.57, .17, 0.13],
                         ]
         self.place_locations = [
-                            [.2, .6, 0.1],
+                            [.2, .6, 0.13],
                             [.2, .6, 0.15],
                             [.2, .6, 0.2],
                         ]
