@@ -5,8 +5,8 @@
   <arg name="gui" default="true" doc="Starts gazebo gui" />
   
   <!-- startup simulated world -->
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" default="$(find gazebo_ros)/launch/WerkopstellingN.world"/>
+  <include file="/opt/ros/kinetic/share/gazebo_ros/launch/empty_world.launch">
+    <arg name="world_name" default="$(find ur_description)/worlds/WerkopstellingN.world"/>
     <arg name="paused" value="$(arg paused)"/>
     <arg name="gui" value="$(arg gui)"/>
   </include>
@@ -17,7 +17,7 @@
   </include>
 
   <!-- push robot_description to factory and spawn robot in gazebo -->
-  <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model robot -z 1.015" respawn="false" output="screen" />
+  <node name="spawn_gazebo_model" pkg="gazebo_ros" type="spawn_model" args="-urdf -param robot_description -model robot -z 1.02" respawn="false" output="screen" />
 
   <include file="$(find ur_gazebo)/launch/controller_utils.launch"/>
 
