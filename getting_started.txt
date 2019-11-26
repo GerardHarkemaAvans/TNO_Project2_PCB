@@ -7,7 +7,7 @@ Make sure the following dependencies are installed:
 - pyyaml
 - rospkg
 
-install: 
+install using apt: 
 ros-kinetic-full
 ros-kinetic-moveit
 ros-kinetic-franka-description
@@ -33,7 +33,11 @@ To start a simulation, use these following steps:
 
 
 # Use this command if an error occours while importing pyassimp
-pip install -U pyassimp
+try 1)
+	pip install -U pyassimp
+try 2)
+	sudo dpkg --remove --force-depends python-pyassimp
+	sudo -H pip install pyassimp
 
 
 # Use this command with the error
