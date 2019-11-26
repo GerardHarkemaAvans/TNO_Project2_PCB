@@ -38,7 +38,15 @@ class MES:
         p.pose.position.z = 0
         self.robot.scene.add_box('table', p, (1.25, 1.25, 0.01))
         time.sleep(.5)
-        print('TABLE ADDED')  # temp
+
+        # ADDING BACK WALL ---------------------------------------------------
+        p = moveit_commander.PoseStamped()
+        p.header.frame_id = self.robot.robot.get_planning_frame()
+        p.pose.position.x = -.4
+        p.pose.position.y = 0
+        p.pose.position.z = 0
+        self.robot.scene.add_box('backwall', p, (.01, 2, 2))
+        time.sleep(.5)
 
     def go_to_cords(self):
         try:
@@ -141,8 +149,6 @@ class MES:
             sticky=W, row=0, column=1)
         self.pos = StringVar(self.root)
         Label(self.root, textvariable=self.pos).grid(column=1, sticky=W)
-        # Label(root, text='Huidige positie: ' + str((1,2,2))).grid(column=1,
-        #     sticky=W)
 
         # USER INPUT ---------------------------------------------------------
         Label(self.root, text='Geef hier een input').grid(row=1, columnspan=2, 
@@ -237,7 +243,10 @@ def main():
         return
 
     app = MES(robot_name)
-    app.window()
+    try:
+        app.window()
+    finally:
+        print('Bye Bye')
 
 
 if __name__ == '__main__':
