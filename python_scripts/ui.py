@@ -157,7 +157,7 @@ class MES:
             # x=groen, y=rood, z=blauw
             Label(self.root, text=elem).grid(row=2+idx, column=0, sticky=W)
 
-        # Input boxes
+        # Input boxes --------------------------------------------------------
         self.display = [Entry(self.root) for i in range(6)]
         [self.display[i].grid(row=i+2, column=1, sticky=W+E) for i in range(6)]
         Button(self.root, text='Go To', command=self.go_to_cords).grid(
@@ -185,7 +185,6 @@ class MES:
 
 def run_roslaunch1():
     if panda:
-        # Dit command is voor het plannen -- dus moet aangepast worden
         command = 'roslaunch panda_moveit_config demo.launch'
     if ur5:
         command = 'roslaunch ur_gazebo ur5.launch'
