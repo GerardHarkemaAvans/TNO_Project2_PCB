@@ -1,68 +1,59 @@
-# Upload files on the collective git hub
- - git add /file.txt
- - git commit - m "message"
- - git push
-
 Make sure the following dependencies are installed:
-- pyyaml
-- rospkg
+	- pyyaml
+	- rospkg
+
 
 install using apt: 
-ros-kinetic-full
-ros-kinetic-moveit
-ros-kinetic-franka-description
+	- ros-kinetic-full
+	- ros-kinetic-moveit
+	- ros-kinetic-franka-description
 
 
-To install for PANDA:
- - Todo
-
+clone the following packages in you're catkin_ws/src:
+	- git clone -b kinetic-devel https://github.com/ros-planning/panda_moveit_config.git
 
 
 To start a simulation, use these following steps:
-- open a terminal and type the following commands
-	sudo ifconfig enx00e04c680f64 192.168.1.30 netmask 255.255.255.0
-		# enx00e04c680f64 is the name of the ethernet cable ur5
-- open a second terminal ...
-	roslaunch ur_modern_driver ur5_bringup.launch robot_ip:=192.168.1.102 [reverse_port:=REVERSE_PORT]
-	(or "roslaunch ur_bringup ur5_bringup.launch robot_ip:=192.168.1.102 [reverse_port:=REVERSE_PORT]"
-- open a third ...
-	roslaunch ur5_moveit_config ur5_moveit_planning_execution.launch limited:=true
-		# opens a moveit screen of the ur5.
-
-
+	- open a terminal and type the following commands
+		sudo ifconfig enx00e04c680f64 192.168.1.30 netmask 255.255.255.0
+			# enx00e04c680f64 is the name of the ethernet cable ur5
+	- open a second terminal ...
+		roslaunch ur_modern_driver ur5_bringup.launch robot_ip:=192.168.1.102 [reverse_port:=REVERSE_PORT]
+		(or "roslaunch ur_bringup ur5_bringup.launch robot_ip:=192.168.1.102 [reverse_port:=REVERSE_PORT]"
+	- open a third ...
+		roslaunch ur5_moveit_config ur5_moveit_planning_execution.launch limited:=true
+			# opens a moveit screen of the ur5.
 
 
 # Use this command if an error occours while importing pyassimp
-try 1)
-	pip install -U pyassimp
-try 2)
-	sudo dpkg --remove --force-depends python-pyassimp
-	sudo -H pip install pyassimp
+	try 1)
+		pip install -U pyassimp
+	try 2)
+		sudo dpkg --remove --force-depends python-pyassimp
+		sudo -H pip install pyassimp
 
 
-# Use this command with the error
+# Use this command for the following error
    - "Could not find a package configuration file provided by "industrial_msgs""
-sudo apt install --reinstall ros-kinetic-industrial-msgs
+		sudo apt install --reinstall ros-kinetic-industrial-msgs
 
 
 # Use this command with the error
 	- "The following packages have unmet dependencies:
- libaria-dev : Depends: libaria2v5 (= 2.8.0+repack-1ubuntu2) but it is not going to be installed
-E: Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution).
-"
-sudo apt purge libaria-dev
+	 libaria-dev : Depends: libaria2v5 (= 2.8.0+repack-1ubuntu2) but it is not going to be installed
+	E: Unmet dependencies. Try 'apt-get -f install' with no packages (or specify a solution)."
+		sudo apt purge libaria-dev
 
 
 # How To Fix System Program Problem Detected In Ubuntu
-sudo rm /var/crash/*
+	sudo rm /var/crash/*
 
 
 # To get the necessary dependencies of all current ros packages
-rosdep install --from-paths . --ignore-src --rosdistro kinetic
+	rosdep install --from-paths . --ignore-src --rosdistro kinetic
 
-# ---------------------------------------------------------
+
 # How to get the real Robotiq gripper to move:
-
 #To control the gripper over a serial port, you may need to give proper privileges to the user:
 	"sudo usermod -a -G dialout YOURUSERNAME"
 #YOURUSERNAME is for exampel dca or gerard.
@@ -90,11 +81,5 @@ rosdep install --from-paths . --ignore-src --rosdistro kinetic
 
 Press 'a' to activate the gripper.
 
-# temp ----------------------------------------
-## kijk of hiermee panda in gazebo kan
-https://github.com/erdalpekel/panda_simulation
-
-Buidling frankaemika from source
-https://frankaemika.github.io/docs/installation_linux.html
 
 
