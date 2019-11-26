@@ -30,6 +30,16 @@ class MES:
             self.ry = np.pi / 2
         self.rz = 0
 
+        # ADDING TABLE -------------------------------------------------------
+        p = moveit_commander.PoseStamped()
+        p.header.frame_id = self.robot.robot.get_planning_frame()
+        p.pose.position.x = 0
+        p.pose.position.y = 0
+        p.pose.position.z = 0
+        self.robot.scene.add_box('table', p, (1.25, 1.25, 0.01))
+        time.sleep(.5)
+        print('TABLE ADDED')  # temp
+
     def go_to_cords(self):
         try:
             values = [float(x.get()) for x in self.display]
