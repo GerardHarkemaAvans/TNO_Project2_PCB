@@ -9,12 +9,23 @@ import tkMessageBox
 import numpy as np
 import subprocess
 import threading
+import platform  # ff python2/3 onafhankelijk maken
 import random
+import roslib
 import rospy
 import copy
 import math
 import time
 import sys
+
+
+from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
+roslib.load_manifest('robotiq_2f_gripper_control')
+from Robotiq2FGripperRtuNode import mainLoop
+
+
+GRIPPERPORT = '/dev/ttyUSB0'
+MAINLOOPRUNNING = False
 
 
 class MES:
@@ -171,15 +182,24 @@ class MES:
         Button(self.root, text='Execute All Tasks', command=
             self.execute_all_thread).grid(row=10+idx, columnspan=2, sticky=W+E)
 
-        # BOXEN TOEVOEGEN ----------------------------------------------------
-        Label(self.root, text='Box toevoegen').grid(row=11+idx, sticky=W, 
+        # GRIPPER BUTTONS ----------------------------------------------------
+        Label(self.root, text='Gripper control').grid(row=11+idx, sticky=W,
             columnspan=2)
-        for idx2, elem in enumerate(['x', 'y', 'z', 'dx', 'dy', 'dz']):
-            Label(self.root, text=elem).grid(row=12+idx+idx2, sticky=W)
-        self.boxcoords = [Entry(self.root) for i in range(6)]
-        [self.boxcoords[idx2].grid(row=12+idx+idx2, column=1) for idx2 in range(6)]
-        Button(self.root, text='Toevoegen', command=self.add_objects).grid(
-            row=13+idx+idx2, columnspan=2, sticky=W+E)
+        Button(self.root, text='open', command=open_gripper).grid(row=12+idx,
+            sticky=W+E, column=0)
+        Button(self.root, text='close', command=close_gripper).grid(row=12+idx,
+            sticky=W, column=1)
+
+        # # BOXEN TOEVOEGEN ----------------------------------------------------
+        # Label(self.root, text='Box toevoegen').grid(row=11+idx, sticky=W, 
+        #     columnspan=2)
+        # for idx2, elem in enumerate(['x', 'y', 'z', 'dx', 'dy', 'dz']):
+        #     Label(self.root, text=elem).grid(row=12+idx+idx2, sticky=W)
+        # self.boxcoords = [Entry(self.root) for i in range(6)]
+        # [self.boxcoords[idx2].grid(row=12+idx+idx2, column=1) for idx2 in range(6)]
+        # Button(self.root, text='Toevoegen', command=self.add_objects).grid(
+        #     row=13+idx+idx2, columnspan=2, sticky=W+E)
+
         self.root.mainloop()
 
 
@@ -215,6 +235,75 @@ def roslaunch_thread():
     time.sleep(5)
 
 
+def activate_gripper():
+    command = 'python Robotiq2FGripperRtuNode.py ' + GRIPPERPORT
+    process = subprocess.Popen(command.split(' '))
+    process.communicate()
+    time.sleep(1)
+
+    command2 = 'python init_gripper_node'
+    process = subprocess.Popen(command2.split(' '))
+    process.communicate()
+    time.sleep(1)
+
+
+def activate_gripper_thread():
+    thread = threading.Thread(target=activate_gripper)
+    thread.start()
+    time.sleep(4)
+
+
+def control_gripper(action):
+    '''action must be in ['open', 'close']
+    '''
+    global MAINLOOPRUNNING, pub
+
+    if action not in ['open', 'close']:
+        raise ValueError('Bad input')
+
+    if not MAINLOOPRUNNING:
+        MAINLOOPRUNNING = True
+        activate_gripper_thread()
+        pub = rospy.Publisher('Robotiq2FGripperRobotOutput', 
+            outputMsg.Robotiq2FGripper_robot_output)
+
+        command = outputMsg.Robotiq2FGripper_robot_output()
+        command.rACT = 1
+        command.rGTO = 1
+        command.rSP  = 255
+        command.rFR  = 150
+        pub.publish(command)
+        time.sleep(1)
+
+
+    # HIER VERDER GAAN MET SCRIPT OM GRIPPER AAN TE VOEREN -------------------
+    command = outputMsg.Robotiq2FGripper_robot_output()
+    if action == 'open':
+        command.rACT = 1
+        command.rGTO = 1
+        command.rATR = 0
+        command.rPR = 0
+        command.rSP = 255
+        command.rFR = 25
+    else:
+        command.rACT = 1
+        command.rGTO = 1
+        command.rATR = 0
+        command.rPR = 255
+        command.rSP = 255
+        command.rFR = 25
+    pub.publish(command)
+
+
+def open_gripper():
+    control_gripper('open')
+
+
+def close_gripper():
+    control_gripper('close')
+
+
+
 def main():
     global ur5, panda
     ur5, panda = False, False
@@ -242,11 +331,7 @@ def main():
         return
 
     app = MES(robot_name)
-    try:
-        app.window()
-    finally:
-        print('Bye Bye')
-
+    app.window()
 
 if __name__ == '__main__':
     main()
