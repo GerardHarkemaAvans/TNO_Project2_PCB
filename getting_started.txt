@@ -81,5 +81,12 @@ To start a simulation, use these following steps:
 
 Press 'a' to activate the gripper.
 
+#Using the Panda Gripper in RVIZ and Gazebo
+The packages that you need to use, are the following:
+ - Libfranka
+ - Franka_ros
+ - panda_moveit_config
 
+ Matj' Erdal has a custom package that you also can use. 
 
+ 
