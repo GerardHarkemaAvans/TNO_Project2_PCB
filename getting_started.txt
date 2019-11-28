@@ -3,9 +3,10 @@ Make sure the following dependencies are installed:
 	- rospkg
 
 
-install using apt: 
+install using apt install ...
 	- ros-kinetic-full
 	- ros-kinetic-moveit
+	- ros-kinetic-ur-description
 	- ros-kinetic-franka-description
 
 
