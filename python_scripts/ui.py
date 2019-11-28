@@ -4,12 +4,10 @@ from moveit_ur5 import MoveGroupPythonInteface
 import geometry_msgs.msg
 import moveit_commander
 import moveit_msgs.msg
-from Tkinter import *
 import tkMessageBox
 import numpy as np
 import subprocess
 import threading
-import platform  # ff python2/3 onafhankelijk maken
 import random
 import roslib
 import rospy
@@ -26,6 +24,14 @@ from Robotiq2FGripperRtuNode import mainLoop
 
 GRIPPERPORT = '/dev/ttyUSB0'
 MAINLOOPRUNNING = False
+
+
+# Make this file compeditable on both python2 and python3
+if sys.version_info[0] == 3:
+    raw_input = input
+    from tkinter import *
+else:
+    from Tkinter import *
 
 
 class MES:
@@ -70,6 +76,7 @@ class MES:
         self.robot.go_to_pose_goal(x, y, z, rx, ry, rz)
 
     def execute_all(self):
+        open_gripper()
         for i, taak in enumerate(self.inhoud.split('\n')):
             Label(self.root, bg='red', text=taak.replace('_', ' ').replace(
                 '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
@@ -97,6 +104,7 @@ class MES:
                 # And go down now
                 self.robot.go_to_pose_goal(x_place, y_place, z_place, self.rx, 
                     self.ry, self.rz)
+                close_gripper()
 
             elif taak.startswith('go_placeloc'):
                 Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
@@ -113,6 +121,7 @@ class MES:
                     self.ry, self.rz)
                 self.robot.go_to_pose_goal(x_place, y_place, z_place, self.rx, 
                     self.ry, self.rz)
+                open_gripper()
             
             else:
                 tkMessageBox.showerror('ERROR', 'Devolgende regel is niet '
@@ -139,15 +148,15 @@ class MES:
         tkMessageBox.showinfo('Joint Values', str(pos2))
 
     def add_objects(self):
-        name = str(random.random())
         x, y, z, dx, dy, dz = [x.get() for x in self.boxcoords]
         p = moveit_commander.PoseStamped()
         p.header.frame_id = self.robot.robot.get_planning_frame()
         p.pose.position.x = float(x)
         p.pose.position.y = float(y)
         p.pose.position.z = float(z)
-        self.robot.scene.add_box(name, p, (float(dx), float(dy), float(dz)))
+        self.robot.scene.add_box(self.boxname.get(), p, (float(dx), float(dy), float(dz)))
         time.sleep(.5)
+        print('Toegevoegd')
 
     def window(self):
         self.root = Tk()
@@ -190,15 +199,18 @@ class MES:
         Button(self.root, text='close', command=close_gripper).grid(row=12+idx,
             sticky=W, column=1)
 
-        # # BOXEN TOEVOEGEN ----------------------------------------------------
-        # Label(self.root, text='Box toevoegen').grid(row=11+idx, sticky=W, 
-        #     columnspan=2)
-        # for idx2, elem in enumerate(['x', 'y', 'z', 'dx', 'dy', 'dz']):
-        #     Label(self.root, text=elem).grid(row=12+idx+idx2, sticky=W)
-        # self.boxcoords = [Entry(self.root) for i in range(6)]
-        # [self.boxcoords[idx2].grid(row=12+idx+idx2, column=1) for idx2 in range(6)]
-        # Button(self.root, text='Toevoegen', command=self.add_objects).grid(
-        #     row=13+idx+idx2, columnspan=2, sticky=W+E)
+        # BOXEN TOEVOEGEN ----------------------------------------------------
+        Label(self.root, text='Box toevoegen').grid(row=13+idx, sticky=W, 
+            columnspan=2)
+        for idx2, elem in enumerate(['x', 'y', 'z', 'dx', 'dy', 'dz']):
+            Label(self.root, text=elem).grid(row=14+idx+idx2, sticky=W)
+        self.boxcoords = [Entry(self.root) for i in range(6)]
+        [self.boxcoords[idx2].grid(row=14+idx+idx2, column=1) for idx2 in range(6)]
+        Label(self.root, text='naam').grid(row=15+idx+idx2, column=0, sticky=W)
+        self.boxname = Entry(self.root)
+        self.boxname.grid(row=15+idx+idx2, column=1)
+        Button(self.root, text='Toevoegen', command=self.add_objects).grid(
+            row=17+idx+idx2, columnspan=2, sticky=W+E)
 
         self.root.mainloop()
 
@@ -215,6 +227,10 @@ def run_roslaunch1():
 def run_roslaunch2():
     if panda:
         command = 'rosrun moveit_commander moveit_commander_cmdline.py'
+    if ur5 and real:
+        command = 'roslaunch ur_bringup ur5_bringup.launch ' +\
+                  'robot_ip:=192.168.1.102 [reverse_port:=REVERSE_PORT]'
+        subprocess.call(command.split(' '))
     if ur5:
         command = 'roslaunch ur5_moveit_config ' +\
         'ur5_moveit_planning_execution.launch sim:=true limited:=true'
@@ -275,8 +291,6 @@ def control_gripper(action):
         pub.publish(command)
         time.sleep(1)
 
-
-    # HIER VERDER GAAN MET SCRIPT OM GRIPPER AAN TE VOEREN -------------------
     command = outputMsg.Robotiq2FGripper_robot_output()
     if action == 'open':
         command.rACT = 1
@@ -285,7 +299,7 @@ def control_gripper(action):
         command.rPR = 0
         command.rSP = 255
         command.rFR = 25
-    else:
+    if action == 'close':
         command.rACT = 1
         command.rGTO = 1
         command.rATR = 0
@@ -296,22 +310,37 @@ def control_gripper(action):
 
 
 def open_gripper():
-    control_gripper('open')
+    try:
+        control_gripper('open')
+    except Exception as e:
+        print(e)
 
 
 def close_gripper():
-    control_gripper('close')
+    try:
+        control_gripper('close')
+    except Exception as e:
+        print(e)
 
 
 
 def main():
-    global ur5, panda
-    ur5, panda = False, False
+    global ur5, panda, real
+    ur5, panda, real = False, False, False
     robot_name = raw_input("[ur5] or [panda]: ")
 
     ## For debugging
     # robot_name = 'ur5'
     # robot_name = 'panda'
+
+    resp = raw_input('simulation or real hardware? s/[r] ')
+    if resp == 's':
+        real = False
+    elif resp == 'r':
+        real = True
+    else:
+        print('Bad input')
+        return
 
     if robot_name.lower() in ['ur5', 'u']:
         robot_name = 'ur5'
@@ -323,7 +352,8 @@ def main():
         print('Bad input')
         return
 
-    resp = raw_input("open 'roslaunch files? Y/[N]: ")
+    # resp = raw_input("open 'roslaunch files? Y/[N]: ")
+    resp = 'y'
     if resp.lower() in ['y', 'j', 'yes', 'ja']:
         roslaunch_thread()
     elif resp.lower() not in ['n', 'no', 'ne', 'nee']:
