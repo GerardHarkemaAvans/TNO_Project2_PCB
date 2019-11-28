@@ -11,6 +11,7 @@ install using apt:
 
 clone the following packages in you're catkin_ws/src:
 	- git clone -b kinetic-devel https://github.com/ros-planning/panda_moveit_config.git
+	- git clone -b kinetic-devel https://github.com/ros-planning/moveit_tutorials.git
 
 
 To start a simulation, use these following steps:
