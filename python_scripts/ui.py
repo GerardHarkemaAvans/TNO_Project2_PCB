@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 
+from trajectory_msgs.msg import JointTrajectoryPoint
+from trajectory_msgs.msg import JointTrajectory
 from moveit_ur5 import MoveGroupPythonInteface
 import geometry_msgs.msg
+import tf2_geometry_msgs
 import moveit_commander
 import moveit_msgs.msg
 import tkMessageBox
@@ -90,9 +93,7 @@ class MES:
                     '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
                 time.sleep(0.01)
                 # START BY GOING TO 50 CM HEIGHT -----------------------------
-                if np.round(z, 3) != 0.5:
-                    self.robot.go_to_pose_goal(x, y, 0.5, self.rx, self.ry, 
-                        self.rz)
+
 
                 # We have to to -1 bc python starts counting at 0
                 idx = int(taak.split('-')[1]) - 1 
@@ -277,36 +278,54 @@ def control_gripper(action):
     if action not in ['open', 'close']:
         raise ValueError('Bad input')
 
-    if not MAINLOOPRUNNING:
-        MAINLOOPRUNNING = True
-        activate_gripper_thread()
-        pub = rospy.Publisher('Robotiq2FGripperRobotOutput', 
-            outputMsg.Robotiq2FGripper_robot_output)
+    if real:
+        if not MAINLOOPRUNNING:
+            MAINLOOPRUNNING = True
+            activate_gripper_thread()
+            pub = rospy.Publisher('Robotiq2FGripperRobotOutput', 
+                outputMsg.Robotiq2FGripper_robot_output)
+
+            command = outputMsg.Robotiq2FGripper_robot_output()
+            command.rACT = 1
+            command.rGTO = 1
+            command.rSP  = 255
+            command.rFR  = 150
+            pub.publish(command)
+            time.sleep(1)
 
         command = outputMsg.Robotiq2FGripper_robot_output()
-        command.rACT = 1
-        command.rGTO = 1
-        command.rSP  = 255
-        command.rFR  = 150
+        if action == 'open':
+            command.rACT = 1
+            command.rGTO = 1
+            command.rATR = 0
+            command.rPR = 0
+            command.rSP = 255
+            command.rFR = 25
+        if action == 'close':
+            command.rACT = 1
+            command.rGTO = 1
+            command.rATR = 0
+            command.rPR = 255
+            command.rSP = 255
+            command.rFR = 25
         pub.publish(command)
-        time.sleep(1)
+    
+    if panda: # and not real for later
+        # ditisiets = moveit_msgs.msg.Grasp()
 
-    command = outputMsg.Robotiq2FGripper_robot_output()
-    if action == 'open':
-        command.rACT = 1
-        command.rGTO = 1
-        command.rATR = 0
-        command.rPR = 0
-        command.rSP = 255
-        command.rFR = 25
-    if action == 'close':
-        command.rACT = 1
-        command.rGTO = 1
-        command.rATR = 0
-        command.rPR = 255
-        command.rSP = 255
-        command.rFR = 25
-    pub.publish(command)
+        gripper = JointTrajectory()
+        finger = JointTrajectoryPoint()
+        
+        gripper.joint_names.append('panda_finger_joint1')
+        gripper.joint_names.append('panda_finger_joint2')
+        gripper.points.append([])
+        
+        if action == 'open':
+            gripper.points[0].append([0.4, 0.4])
+
+        if action == 'close':
+            gripper.points[0].append([0, 0])
+        # gripper.points[0].time_from_start = rospy.Duration(.5)
 
 
 def open_gripper():
@@ -352,8 +371,8 @@ def main():
         print('Bad input')
         return
 
-    # resp = raw_input("open 'roslaunch files? Y/[N]: ")
     resp = 'y'
+    resp = raw_input("open 'roslaunch files? Y/[N]: ")
     if resp.lower() in ['y', 'j', 'yes', 'ja']:
         roslaunch_thread()
     elif resp.lower() not in ['n', 'no', 'ne', 'nee']:
