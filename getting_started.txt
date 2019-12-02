@@ -13,6 +13,8 @@ install using apt install ...
 clone the following packages in you're catkin_ws/src:
 	- git clone -b kinetic-devel https://github.com/ros-planning/panda_moveit_config.git
 	- git clone -b kinetic-devel https://github.com/ros-planning/moveit_tutorials.git
+	- git clone https://github.com/UniversalRobots/Universal_Robots_ROS_Driver
+Deze wss niet - later naar kijken
 	- git clone -b kinetic-devel https://github.com/ros-industrial/ur_modern_driver
 
 
