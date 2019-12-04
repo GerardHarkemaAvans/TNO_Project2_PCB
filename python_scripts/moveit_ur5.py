@@ -32,15 +32,12 @@ class MoveGroupPythonInteface(object):
                                                        moveit_msgs.msg.DisplayTrajectory,
                                                        queue_size=20)
         # PRODUCT PARAMETERS----------
+        ## All the inner lists must have 7 elements
         self.product_locations = [
-                            [.6402, -.5817, .1413], 
-                            [.5, .3, 0.13], 
-                            [.57, .17, 0.13],
+                            [.6402, -.5817, .1413, -.7170, 0, .6952, 0], 
                         ]
         self.place_locations = [
-                            [-.7170, ],
-                            [.2, .6, 0.15],
-                            [.2, .6, 0.2],
+                            [.6626, .4835, .1484, -.73, 0, .6952, 0],
                         ]
         assert len(self.place_locations) == len(self.product_locations)
         self.productcount = len(self.product_locations)

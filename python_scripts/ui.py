@@ -104,13 +104,11 @@ class MES:
                 # We have to to -1 bc python starts counting at 0
                 idx = int(taak.split('-')[1]) - 1 
                 product_location = self.robot.product_locations[idx]
-                x_place, y_place, z_place = product_location
+                x_place, y_place, z_place, rx, ry, rz, rw = product_location
                 # First go above the product
-                self.robot.go_to_pose_goal(x_place, y_place, 0.5, self.rx, 
-                    self.ry, self.rz)
+                self.robot.go_to_pose_goal(x_place, y_place, 0.5, rx, ry, rz, rw)
                 # And go down now
-                self.robot.go_to_pose_goal(x_place, y_place, z_place, self.rx, 
-                    self.ry, self.rz)
+                self.robot.go_to_pose_goal(x_place, y_place, z_place, rx, ry, rz, rw)
                 # close_gripper()
 
             elif taak.startswith('go_placeloc'):
@@ -123,11 +121,9 @@ class MES:
 
                 idx = int(taak.split('-')[1]) - 1 
                 place_location = self.robot.place_locations[idx]
-                x_place, y_place, z_place = place_location
-                self.robot.go_to_pose_goal(x_place, y_place, 0.5, self.rx, 
-                    self.ry, self.rz)
-                self.robot.go_to_pose_goal(x_place, y_place, z_place, self.rx, 
-                    self.ry, self.rz)
+                x_place, y_place, z_place, rx, ry, rz, rws = place_location
+                self.robot.go_to_pose_goal(x_place, y_place, 0.5, rx, ry, rz, rw)
+                self.robot.go_to_pose_goal(x_place, y_place, z_place, rx, ry, rz, rw)
                 # open_gripper()
             
             else:
