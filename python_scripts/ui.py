@@ -19,6 +19,8 @@ import math
 import time
 import sys
 
+# Note ik heb ff iets aangepast bij controllers.yaml
+
 
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
 roslib.load_manifest('robotiq_2f_gripper_control')
@@ -50,6 +52,7 @@ class MES:
             self.ry = np.pi / 2
         self.rz = 0
 
+        
         # ADDING TABLE -------------------------------------------------------
         p = moveit_commander.PoseStamped()
         p.header.frame_id = self.robot.robot.get_planning_frame()
@@ -67,6 +70,7 @@ class MES:
         p.pose.position.z = 0
         self.robot.scene.add_box('backwall', p, (.01, 2, 2))
         time.sleep(.5)
+        
 
     def go_to_cords(self):
         try:
@@ -93,7 +97,9 @@ class MES:
                     '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
                 time.sleep(0.01)
                 # START BY GOING TO 50 CM HEIGHT -----------------------------
-
+                if np.round(z, 3) != 0.5:
+                    self.robot.go_to_pose_goal(x, y, 0.5, self.rx, self.ry, 
+                        self.rz)
 
                 # We have to to -1 bc python starts counting at 0
                 idx = int(taak.split('-')[1]) - 1 
@@ -105,7 +111,7 @@ class MES:
                 # And go down now
                 self.robot.go_to_pose_goal(x_place, y_place, z_place, self.rx, 
                     self.ry, self.rz)
-                close_gripper()
+                # close_gripper()
 
             elif taak.startswith('go_placeloc'):
                 Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
@@ -122,7 +128,7 @@ class MES:
                     self.ry, self.rz)
                 self.robot.go_to_pose_goal(x_place, y_place, z_place, self.rx, 
                     self.ry, self.rz)
-                open_gripper()
+                # open_gripper()
             
             else:
                 tkMessageBox.showerror('ERROR', 'Devolgende regel is niet '

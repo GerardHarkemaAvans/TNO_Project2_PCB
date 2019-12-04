@@ -33,22 +33,24 @@ class MoveGroupPythonInteface(object):
                                                        queue_size=20)
         # PRODUCT PARAMETERS----------
         self.product_locations = [
-                            [.4, .4, 0.13], 
+                            [.6402, -.5817, .1413], 
                             [.5, .3, 0.13], 
                             [.57, .17, 0.13],
                         ]
         self.place_locations = [
-                            [.2, .6, 0.13],
+                            [-.7170, ],
                             [.2, .6, 0.15],
                             [.2, .6, 0.2],
                         ]
         assert len(self.place_locations) == len(self.product_locations)
         self.productcount = len(self.product_locations)
 
-    def go_to_pose_goal(self, x, y, z, rx=pi, ry=0, rz=0):
+    def go_to_pose_goal(self, x, y, z, rx=pi, ry=0, rz=0, w=None):
         group = self.group
 
         coords = [x, y, z, rx, ry, rz]
+        if w != None:
+            coords.append(w)
         group.set_pose_target(coords)
 
         ## Now, we call the planner to compute the plan and execute it.
