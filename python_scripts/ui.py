@@ -51,7 +51,6 @@ class MES:
         elif self.robot_name == 'ur5':
             self.ry = np.pi / 2
         self.rz = 0
-
         
         # ADDING TABLE -------------------------------------------------------
         p = moveit_commander.PoseStamped()
@@ -62,10 +61,10 @@ class MES:
         self.robot.scene.add_box('table', p, (1.25, 1.25, 0.01))
         time.sleep(.5)
 
-        # ADDING BACK WALL ---------------------------------------------------
+        #ADDING BACK WALL ---------------------------------------------------
         p = moveit_commander.PoseStamped()
         p.header.frame_id = self.robot.robot.get_planning_frame()
-        p.pose.position.x = -.4
+        p.pose.position.x = -.25
         p.pose.position.y = 0
         p.pose.position.z = 0
         self.robot.scene.add_box('backwall', p, (.01, 2, 2))
@@ -83,7 +82,7 @@ class MES:
         self.robot.go_to_pose_goal(x, y, z, rx, ry, rz)
 
     def execute_all(self):
-        open_gripper()
+        #open_gripper()
         for i, taak in enumerate(self.inhoud.split('\n')):
             Label(self.root, bg='red', text=taak.replace('_', ' ').replace(
                 '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
@@ -104,11 +103,26 @@ class MES:
                 # We have to to -1 bc python starts counting at 0
                 idx = int(taak.split('-')[1]) - 1 
                 product_location = self.robot.product_locations[idx]
-                x_place, y_place, z_place, rx, ry, rz, rw = product_location
+                if len(product_location) == 3:
+                    x_place, y_place, z_place = product_location
+                else:
+                    x_place, y_place, z_place, rx, ry, rz, rw = product_location
+
                 # First go above the product
-                self.robot.go_to_pose_goal(x_place, y_place, 0.5, rx, ry, rz, rw)
+                if len(product_location) == 3:
+                    self.robot.go_to_pose_goal(x_place, y_place, 0.5, self.rx,
+                        self.ry, self.rz)
+                else:
+                    self.robot.go_to_pose_goal(x_place, y_place, 0.5, rx, ry, 
+                        rz, rw)
+
                 # And go down now
-                self.robot.go_to_pose_goal(x_place, y_place, z_place, rx, ry, rz, rw)
+                if len(product_location) == 3:
+                    self.robot.go_to_pose_goal(x_place, y_place, z_place, 
+                        self.rx, self.ry, self.rz)
+                else:
+                    self.robot.go_to_pose_goal(x_place, y_place, z_place, rx,
+                     ry, rz, rw)
                 # close_gripper()
 
             elif taak.startswith('go_placeloc'):
@@ -121,9 +135,28 @@ class MES:
 
                 idx = int(taak.split('-')[1]) - 1 
                 place_location = self.robot.place_locations[idx]
-                x_place, y_place, z_place, rx, ry, rz, rws = place_location
-                self.robot.go_to_pose_goal(x_place, y_place, 0.5, rx, ry, rz, rw)
-                self.robot.go_to_pose_goal(x_place, y_place, z_place, rx, ry, rz, rw)
+                if len(product_location) == 3:
+                    self.robot.go_to_pose_goal(x_place, y_place, z_place, 
+                        self.rx, self.ry, self.rz)
+                else:
+                    self.robot.go_to_pose_goal(x_place, y_place, z_place, rx,
+                     ry, rz, rw)
+
+                # First go above the product
+                if len(product_location) == 3:
+                    self.robot.go_to_pose_goal(x_place, y_place, 0.5, self.rx,
+                        self.ry, self.rz)
+                else:
+                    self.robot.go_to_pose_goal(x_place, y_place, 0.5, rx, ry, 
+                        rz, rw)
+
+                # And go down now
+                if len(product_location) == 3:
+                    self.robot.go_to_pose_goal(x_place, y_place, z_place, 
+                        self.rx, self.ry, self.rz)
+                else:
+                    self.robot.go_to_pose_goal(x_place, y_place, z_place, rx,
+                     ry, rz, rw)
                 # open_gripper()
             
             else:
@@ -145,9 +178,11 @@ class MES:
 
     def get_pos(self):
         pos = self.robot.group.get_current_pose()
+        print(str(pos.pose))
         tkMessageBox.showinfo('Position', str(pos.pose))
         pos2 = self.robot.group.get_current_joint_values()
-        print(pos2)
+        print('Joint values:')
+        print(str(pos2))
         tkMessageBox.showinfo('Joint Values', str(pos2))
 
     def add_objects(self):
