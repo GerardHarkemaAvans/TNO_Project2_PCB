@@ -7,6 +7,7 @@ import geometry_msgs.msg
 import tf2_geometry_msgs
 import moveit_commander
 import moveit_msgs.msg
+import sensor_msgs.msg
 import tkMessageBox
 import numpy as np
 import subprocess
@@ -69,6 +70,10 @@ class MES:
         p.pose.position.z = 0
         self.robot.scene.add_box('backwall', p, (.01, 2, 2))
         time.sleep(.5)
+
+        self.finger_pub = rospy.Publisher('/move_group/fake_controller_joint_states',
+                                                   sensor_msgs.msg.JointState,
+                                                   queue_size=20)
         
 
     def go_to_cords(self):
@@ -232,10 +237,10 @@ class MES:
         # GRIPPER BUTTONS ----------------------------------------------------
         Label(self.root, text='Gripper control').grid(row=11+idx, sticky=W,
             columnspan=2)
-        Button(self.root, text='open', command=open_gripper).grid(row=12+idx,
-            sticky=W+E, column=0)
-        Button(self.root, text='close', command=close_gripper).grid(row=12+idx,
-            sticky=W, column=1)
+        Button(self.root, text='open', command=lambda: self.control_gripper('open')
+            ).grid(row=12+idx, sticky=W+E, column=0)
+        Button(self.root, text='close', command=lambda: self.control_gripper('close')
+            ).grid(row=12+idx, sticky=W, column=1)
 
         # BOXEN TOEVOEGEN ----------------------------------------------------
         Label(self.root, text='Box toevoegen').grid(row=13+idx, sticky=W, 
@@ -253,6 +258,58 @@ class MES:
         self.root.mainloop()
 
 
+    def control_gripper(self, action):
+        '''action must be in ['open', 'close']
+        '''
+        global MAINLOOPRUNNING, pub
+
+        if action not in ['open', 'close']:
+            raise ValueError('Bad input')
+
+        if real and ur5:
+            if not MAINLOOPRUNNING:
+                MAINLOOPRUNNING = True
+                activate_gripper_thread()
+                pub = rospy.Publisher('Robotiq2FGripperRobotOutput', 
+                    outputMsg.Robotiq2FGripper_robot_output)
+
+                command = outputMsg.Robotiq2FGripper_robot_output()
+                command.rACT = 1
+                command.rGTO = 1
+                command.rSP  = 255
+                command.rFR  = 150
+                pub.publish(command)
+                time.sleep(1)
+
+            command = outputMsg.Robotiq2FGripper_robot_output()
+            if action == 'open':
+                command.rACT = 1
+                command.rGTO = 1
+                command.rATR = 0
+                command.rPR = 0
+                command.rSP = 255
+                command.rFR = 25
+            if action == 'close':
+                command.rACT = 1
+                command.rGTO = 1
+                command.rATR = 0
+                command.rPR = 255
+                command.rSP = 255
+                command.rFR = 25
+            pub.publish(command)
+        
+        if panda:
+            if action == 'open':
+                value = 0.04
+            else:
+                value = 0.
+            jointstate = sensor_msgs.msg.JointState()
+            jointstate.name += ['panda_finger_joint1', 'panda_joint1', 'panda_joint2', 'panda_joint3', 
+                'panda_joint4', 'panda_joint5', 'panda_joint6', 'panda_joint7']
+            jointstate.position += [value] + self.robot.group.get_current_joint_values()
+            self.finger_pub.publish(jointstate)
+
+
 def run_roslaunch1():
     if panda:
         command = 'roslaunch panda_moveit_config demo.launch'
@@ -265,10 +322,6 @@ def run_roslaunch1():
 def run_roslaunch2():
     if panda:
         command = 'rosrun moveit_commander moveit_commander_cmdline.py'
-    if ur5 and real:
-        command = 'roslaunch ur_bringup ur5_bringup.launch ' +\
-                  'robot_ip:=192.168.1.102 [reverse_port:=REVERSE_PORT]'
-        subprocess.call(command.split(' '))
     if ur5:
         command = 'roslaunch ur5_moveit_config ' +\
         'ur5_moveit_planning_execution.launch sim:=true limited:=true'
@@ -307,62 +360,6 @@ def activate_gripper_thread():
     time.sleep(4)
 
 
-def control_gripper(action):
-    '''action must be in ['open', 'close']
-    '''
-    global MAINLOOPRUNNING, pub
-
-    if action not in ['open', 'close']:
-        raise ValueError('Bad input')
-
-    if real:
-        if not MAINLOOPRUNNING:
-            MAINLOOPRUNNING = True
-            activate_gripper_thread()
-            pub = rospy.Publisher('Robotiq2FGripperRobotOutput', 
-                outputMsg.Robotiq2FGripper_robot_output)
-
-            command = outputMsg.Robotiq2FGripper_robot_output()
-            command.rACT = 1
-            command.rGTO = 1
-            command.rSP  = 255
-            command.rFR  = 150
-            pub.publish(command)
-            time.sleep(1)
-
-        command = outputMsg.Robotiq2FGripper_robot_output()
-        if action == 'open':
-            command.rACT = 1
-            command.rGTO = 1
-            command.rATR = 0
-            command.rPR = 0
-            command.rSP = 255
-            command.rFR = 25
-        if action == 'close':
-            command.rACT = 1
-            command.rGTO = 1
-            command.rATR = 0
-            command.rPR = 255
-            command.rSP = 255
-            command.rFR = 25
-        pub.publish(command)
-    
-    if panda: # and not real for later
-        # ditisiets = moveit_msgs.msg.Grasp()
-
-        gripper = JointTrajectory()
-        finger = JointTrajectoryPoint()
-        
-        gripper.joint_names.append('panda_finger_joint1')
-        gripper.joint_names.append('panda_finger_joint2')
-        gripper.points.append([])
-        
-        if action == 'open':
-            gripper.points[0].append([0.4, 0.4])
-
-        if action == 'close':
-            gripper.points[0].append([0, 0])
-        # gripper.points[0].time_from_start = rospy.Duration(.5)
 
 
 def open_gripper():
