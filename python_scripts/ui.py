@@ -21,6 +21,10 @@ import time
 import sys
 
 # Note ik heb ff iets aangepast bij controllers.yaml
+# joint limits:
+# basis: -60 tot 60 graden = -1.0471 tot 1.0471
+# schouder -100 tot -30 = -1.7453 tot -0.5235
+
 
 
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
@@ -86,95 +90,75 @@ class MES:
         print('Received ', values)
         self.robot.go_to_pose_goal(x, y, z, rx, ry, rz)
 
+    def go_up(self):
+        x = self.robot.group.get_current_pose().pose.position.x
+        y = self.robot.group.get_current_pose().pose.position.y
+        z = self.robot.group.get_current_pose().pose.position.z
+        if np.round(z, 3) != 0.5:
+            self.robot.go_to_pose_goal(x, y, 0.5, self.rx, self.ry, 
+                self.rz)
+
     def execute_all(self):
-        #open_gripper()
         for i, taak in enumerate(self.inhoud.split('\n')):
             Label(self.root, bg='red', text=taak.replace('_', ' ').replace(
                 '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
 
         for i, taak in enumerate(self.inhoud.split('\n')):
+            print(i, taak)
             x = self.robot.group.get_current_pose().pose.position.x
             y = self.robot.group.get_current_pose().pose.position.y
             z = self.robot.group.get_current_pose().pose.position.z
             if taak.startswith('go_product'):
+                # Update label
                 Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
                     '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
-                time.sleep(0.01)
+                time.sleep(0.03)
+
                 # START BY GOING TO 50 CM HEIGHT -----------------------------
-                if np.round(z, 3) != 0.5:
-                    self.robot.go_to_pose_goal(x, y, 0.5, self.rx, self.ry, 
-                        self.rz)
+                self.go_up()
 
                 # We have to to -1 bc python starts counting at 0
+                # Read product location
                 idx = int(taak.split('-')[1]) - 1 
                 product_location = self.robot.product_locations[idx]
-                if len(product_location) == 3:
-                    x_place, y_place, z_place = product_location
-                else:
-                    x_place, y_place, z_place, rx, ry, rz, rw = product_location
+                x_place, y_place, z_place = product_location
 
                 # First go above the product
-                if len(product_location) == 3:
-                    self.robot.go_to_pose_goal(x_place, y_place, 0.5, self.rx,
-                        self.ry, self.rz)
-                else:
-                    self.robot.go_to_pose_goal(x_place, y_place, 0.5, rx, ry, 
-                        rz, rw)
-
+                self.robot.go_to_pose_goal(x_place, y_place, 0.5, self.rx, 
+                    self.ry, self.rz)
                 # And go down now
-                if len(product_location) == 3:
-                    self.robot.go_to_pose_goal(x_place, y_place, z_place, 
-                        self.rx, self.ry, self.rz)
-                else:
-                    self.robot.go_to_pose_goal(x_place, y_place, z_place, rx,
-                     ry, rz, rw)
-                # close_gripper()
+                self.robot.go_to_pose_goal(x_place, y_place, z_place, self.rx, 
+                    self.ry, self.rz)
 
             elif taak.startswith('go_placeloc'):
+                # Update label
                 Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
                     '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
-                time.sleep(0.02)
-                if np.round(z, 3) != 0.5:
-                    self.robot.go_to_pose_goal(x, y, 0.5, self.rx, self.ry, 
-                        self.rz)
+                time.sleep(0.03)
 
+                # START BY GOING TO 50 CM HEIGHT -----------------------------
+                self.go_up()
+
+                # Read place location
                 idx = int(taak.split('-')[1]) - 1 
                 place_location = self.robot.place_locations[idx]
-                if len(product_location) == 3:
-                    self.robot.go_to_pose_goal(x_place, y_place, z_place, 
-                        self.rx, self.ry, self.rz)
-                else:
-                    self.robot.go_to_pose_goal(x_place, y_place, z_place, rx,
-                     ry, rz, rw)
+                x_place, y_place, z_place = place_location
 
-                # First go above the product
-                if len(product_location) == 3:
-                    self.robot.go_to_pose_goal(x_place, y_place, 0.5, self.rx,
-                        self.ry, self.rz)
-                else:
-                    self.robot.go_to_pose_goal(x_place, y_place, 0.5, rx, ry, 
-                        rz, rw)
-
+                # Start by going 50cm above the place location
+                self.robot.go_to_pose_goal(x_place, y_place, 0.5, self.rx, 
+                    self.ry, self.rz)
                 # And go down now
-                if len(product_location) == 3:
-                    self.robot.go_to_pose_goal(x_place, y_place, z_place, 
-                        self.rx, self.ry, self.rz)
-                else:
-                    self.robot.go_to_pose_goal(x_place, y_place, z_place, rx,
-                     ry, rz, rw)
-                # open_gripper()
+                self.robot.go_to_pose_goal(x_place, y_place, z_place, self.rx, 
+                    self.ry, self.rz)
             
             else:
                 tkMessageBox.showerror('ERROR', 'Devolgende regel is niet '
                     'herkend\n' + taak)
             Label(self.root, bg='green', text=taak.replace('_', ' ').replace(
                 '-', ' '), fg='white').grid(row=9+i, columnspan=2, sticky=W+E)
+        
         # End by going up
-        x = self.robot.group.get_current_pose().pose.position.x
-        y = self.robot.group.get_current_pose().pose.position.y
-        z = self.robot.group.get_current_pose().pose.position.z
-        if np.round(z, 3) != 0.5:
-            self.robot.go_to_pose_goal(x, y, 0.5, self.rx, self.ry, self.rz)
+        self.go_up()
 
 
     def execute_all_thread(self):
@@ -358,8 +342,6 @@ def activate_gripper_thread():
     thread = threading.Thread(target=activate_gripper)
     thread.start()
     time.sleep(4)
-
-
 
 
 def open_gripper():
