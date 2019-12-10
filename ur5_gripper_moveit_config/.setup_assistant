@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: ""
+    relative_path: /home/dca/catkin_ws/src/TNO_Project2_PCB/ur5MetGripper/ur5_robot.urdf.xacro
+    xacro_args: "--inorder "
+  SRDF:
+    relative_path: config/ur5.srdf
+  CONFIG:
+    author_name: dirk
+    author_email: dirk@hot.com
+    generated_timestamp: 1575887836
