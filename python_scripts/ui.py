@@ -62,8 +62,8 @@ class MES:
         p.header.frame_id = self.robot.robot.get_planning_frame()
         p.pose.position.x = 0
         p.pose.position.y = 0
-        p.pose.position.z = 0
-        self.robot.scene.add_box('table', p, (1.25, 1.25, 0.01))
+        p.pose.position.z = -.05  # correctie dat tafel lager staat
+        self.robot.scene.add_box('table', p, (1.25, 1.25, .01))
         time.sleep(.2)
 
         #ADDING BACK WALL ----------------------------------------------------
@@ -79,7 +79,7 @@ class MES:
         p = moveit_commander.PoseStamped()
         p.header.frame_id = self.robot.robot.get_planning_frame()
         p.pose.position.x = .66
-        p.pose.position.y = -.2
+        p.pose.position.y = -.4
         p.pose.position.z = .2
         self.robot.scene.add_box('backholder1', p, (.2, .2, .1))
         time.sleep(.5)
@@ -125,6 +125,21 @@ class MES:
             # Read product location
 
             if taak.startswith('go_product'):
+                # Update label
+                Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
+                    '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
+                time.sleep(0.03)
+
+                # Read product approach location details
+                idx = int(taak.split('-')[1]) - 1 
+                product_location = self.robot.product_app_loc[idx]
+                if len(product_location) == 3:
+                    gx, gy, gz = product_location
+                    grx, gry, grz = 3.14, 1.57, 0  # todo aanpassen voor panda
+                else:
+                    gx, gy, gz, grx, gry, grz = product_location
+                self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
+
                 # Read product location details
                 idx = int(taak.split('-')[1]) - 1 
                 product_location = self.robot.product_locations[idx]
@@ -133,19 +148,18 @@ class MES:
                     grx, gry, grz = 3.14, 1.57, 0  # todo aanpassen voor panda
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
-
-                # Update label
-                Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
-                    '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
-                time.sleep(0.03)
-
-                # START BY GOING TO 30 CM HEIGHT -----------------------------
-                self.go_up()
-
-                # First go above the product
-                self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
-                # And go down now
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
+
+                # Read product approach location details
+                idx = int(taak.split('-')[1]) - 1 
+                product_location = self.robot.product_app_loc[idx]
+                if len(product_location) == 3:
+                    gx, gy, gz = product_location
+                    grx, gry, grz = 3.14, 1.57, 0  # todo aanpassen voor panda
+                else:
+                    gx, gy, gz, grx, gry, grz = product_location
+                self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
+
 
             elif taak.startswith('go_placeloc'):
                 # Read product location details
@@ -169,6 +183,9 @@ class MES:
                 self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
                 # And go down now
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
+                # GRIPPER SLUITEN
+                # self.control_gripper('close')
+                self.go_up()
             
             else:
                 tkMessageBox.showerror('ERROR', 'Devolgende regel is niet '
@@ -177,8 +194,6 @@ class MES:
             Label(self.root, bg='green', text=taak.replace('_', ' ').replace(
                 '-', ' '), fg='white').grid(row=9+i, columnspan=2, sticky=W+E)
         
-        # End by going up
-        self.go_up()
 
 
     def execute_all_thread(self):
@@ -308,8 +323,9 @@ class MES:
             else:
                 value = 0.
             jointstate = sensor_msgs.msg.JointState()
-            jointstate.name += ['panda_finger_joint1', 'panda_joint1', 'panda_joint2', 'panda_joint3', 
-                'panda_joint4', 'panda_joint5', 'panda_joint6', 'panda_joint7']
+            jointstate.name += ['panda_finger_joint1', 'panda_joint1', 
+            'panda_joint2', 'panda_joint3', 'panda_joint4', 'panda_joint5', 
+            'panda_joint6', 'panda_joint7']
             jointstate.position += [value] + self.robot.group.get_current_joint_values()
             self.finger_pub.publish(jointstate)
 

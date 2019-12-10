@@ -33,15 +33,20 @@ class MoveGroupPythonInteface(object):
                                                        queue_size=20)
         # PRODUCT PARAMETERS----------
         ## All the inner lists must have 7 elements
+        self.product_app_loc = [
+                            [.3678, .5182, .3, 3.14, 1.57, 0],
+                            [.5743, .2982, .0153, 3.14, 0, 1.57],
+                            [],
+        ]
         self.product_locations = [
-                            [.6402, -.5817, .1413], 
-                            [.6402, -.5817, .1413],
-                            [.6402, -.5817, .1413],
+                            [.3678, .5182, .2, 3.14, 1.57, 0], 
+                            [.5743, .3982, .0153, 3.14, 0, 1.57],
+                            [.5402, .4, .14],
                         ]
         self.place_locations = [
-                            [.6626, .4835, .1484],
-                            [.6626, .4835, .1484],
-                            [.6626, .4835, .1484],
+                            [.66, 0.0, .08],
+                            [.66, 0.0, .08],
+                            [.66, 0.0, .08],
                         ]
         assert len(self.place_locations) == len(self.product_locations)
         self.productcount = len(self.product_locations)
