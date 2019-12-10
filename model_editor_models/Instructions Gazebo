@@ -1,0 +1,20 @@
+**********************************************************************
+Changing path directory in a World file
+**********************************************************************
+1. Open Werkopstelling
+2. Search for <uri> and change the directory to the right directory
+
+
+**********************************************************************
+Start Gazebo with your customize World file
+**********************************************************************
+1. Go to your World file location
+2. $ gazebo <World>
+
+
+**********************************************************************
+Optional: Changing path directory models
+**********************************************************************
+1. Open a model.sdf
+2. search for <uri> and change the directory to the right directory
+Note: the files 'Robottafel' and 'Werktafel' do not have to be modified
