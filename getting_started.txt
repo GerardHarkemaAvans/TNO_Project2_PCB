@@ -105,4 +105,8 @@ The packages that you need to use, are the following:
 #To use rviz with ur5 or gripper
 	- roslaunch ur5_gripper_moveit_config demo.launch rviz_tutorial:=true
 
+#Make sure the Robot Description field is set to 'robot_description'.
+#Make sure the Planning Scene Topic field is set to '/planning_scene'. Click on topic name to expose topic-name drop-down.
+#In Planning Request, change the Planning Group to 'ur5_arm'.
+#In Planned Path, change the Trajectory Topic to '/move_group/display_planned_path'.
  
