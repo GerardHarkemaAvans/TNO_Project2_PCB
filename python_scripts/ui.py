@@ -64,15 +64,24 @@ class MES:
         p.pose.position.y = 0
         p.pose.position.z = 0
         self.robot.scene.add_box('table', p, (1.25, 1.25, 0.01))
-        time.sleep(.5)
+        time.sleep(.2)
 
-        #ADDING BACK WALL ---------------------------------------------------
+        #ADDING BACK WALL ----------------------------------------------------
         p = moveit_commander.PoseStamped()
         p.header.frame_id = self.robot.robot.get_planning_frame()
         p.pose.position.x = -.25
         p.pose.position.y = 0
         p.pose.position.z = 0
         self.robot.scene.add_box('backwall', p, (.01, 2, 2))
+        time.sleep(.2)
+
+        #ADDING BACK HOLDER --------------------------------------------------
+        p = moveit_commander.PoseStamped()
+        p.header.frame_id = self.robot.robot.get_planning_frame()
+        p.pose.position.x = .66
+        p.pose.position.y = -.2
+        p.pose.position.z = .2
+        self.robot.scene.add_box('backholder1', p, (.2, .2, .1))
         time.sleep(.5)
 
         #ADDING OBJECT1 ---------------------------------------------------
@@ -86,11 +95,11 @@ class MES:
 
         self.finger_pub = rospy.Publisher('/move_group/fake_controller_joint_states',
                                                    sensor_msgs.msg.JointState,
-                                                   queue_size=20)
-
+                                                   queue_size=20
         if panda and not real:
-        	time.sleep(1)
-        	self.control_gripper('open')
+            time.sleep(1)
+            print('OPENING GRIPPER')
+            self.control_gripper('open')
         
 
     def go_to_cords(self):
@@ -107,8 +116,8 @@ class MES:
         x = self.robot.group.get_current_pose().pose.position.x
         y = self.robot.group.get_current_pose().pose.position.y
         z = self.robot.group.get_current_pose().pose.position.z
-        if np.round(z, 3) != 0.5:
-            self.robot.go_to_pose_goal(x, y, 0.5, self.rx, self.ry, 
+        if np.round(z, 3) != 0.3:
+            self.robot.go_to_pose_goal(x, y, 0.3, self.rx, self.ry, 
                 self.rz)
 
     def execute_all(self):
@@ -117,60 +126,65 @@ class MES:
                 '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
 
         for i, taak in enumerate(self.inhoud.split('\n')):
-            print(i, taak)
             x = self.robot.group.get_current_pose().pose.position.x
             y = self.robot.group.get_current_pose().pose.position.y
             z = self.robot.group.get_current_pose().pose.position.z
+
+            # We have to to -1 bc python starts counting at 0
+            # Read product location
+
             if taak.startswith('go_product'):
+                # Read product location details
+                idx = int(taak.split('-')[1]) - 1 
+                product_location = self.robot.product_locations[idx]
+                if len(product_location) == 3:
+                    gx, gy, gz = product_location
+                    grx, gry, grz = 3.14, 1.57, 0  # todo aanpassen voor panda
+                else:
+                    gx, gy, gz, grx, gry, grz = product_location
+
                 # Update label
                 Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
                     '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
                 time.sleep(0.03)
 
-                # START BY GOING TO 50 CM HEIGHT -----------------------------
+                # START BY GOING TO 30 CM HEIGHT -----------------------------
                 self.go_up()
 
-                # We have to to -1 bc python starts counting at 0
-                # Read product location
-                idx = int(taak.split('-')[1]) - 1 
-                product_location = self.robot.product_locations[idx]
-                x_place, y_place, z_place = product_location
-
                 # First go above the product
-                self.robot.go_to_pose_goal(x_place, y_place, 0.5, self.rx, 
-                    self.ry, self.rz)
+                self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
                 # And go down now
-                self.robot.go_to_pose_goal(x_place, y_place, z_place, self.rx, 
-                    self.ry, self.rz)
+                self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
 
                 self.control_gripper('close')
 
             elif taak.startswith('go_placeloc'):
+                # Read product location details
+                idx = int(taak.split('-')[1]) - 1 
+                product_location = self.robot.place_locations[idx]
+                if len(product_location) == 3:
+                    gx, gy, gz = product_location
+                    grx, gry, grz = 3.14, 1.57, 0  # todo aanpassen voor panda
+                else:
+                    gx, gy, gz, grx, gry, grz = product_location
+
                 # Update label
                 Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
                     '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
                 time.sleep(0.03)
 
-                # START BY GOING TO 50 CM HEIGHT -----------------------------
+                # START BY GOING TO 30 CM HEIGHT -----------------------------
                 self.go_up()
 
-                # Read place location
-                idx = int(taak.split('-')[1]) - 1 
-                place_location = self.robot.place_locations[idx]
-                x_place, y_place, z_place = place_location
-
-                # Start by going 50cm above the place location
-                self.robot.go_to_pose_goal(x_place, y_place, 0.5, self.rx, 
-                    self.ry, self.rz)
+                # First go above the product
+                self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
                 # And go down now
-                self.robot.go_to_pose_goal(x_place, y_place, z_place, self.rx, 
-                    self.ry, self.rz)
 
-                self.control_gripper('open')
             
             else:
                 tkMessageBox.showerror('ERROR', 'Devolgende regel is niet '
                     'herkend\n' + taak)
+            print(i, taak, gx, gy, gz, grx, gry, grz)  # Debug
             Label(self.root, bg='green', text=taak.replace('_', ' ').replace(
                 '-', ' '), fg='white').grid(row=9+i, columnspan=2, sticky=W+E)
         
@@ -359,20 +373,6 @@ def activate_gripper_thread():
     thread = threading.Thread(target=activate_gripper)
     thread.start()
     time.sleep(4)
-
-
-def open_gripper():
-    try:
-        control_gripper('open')
-    except Exception as e:
-        print(e)
-
-
-def close_gripper():
-    try:
-        control_gripper('close')
-    except Exception as e:
-        print(e)
 
 
 
