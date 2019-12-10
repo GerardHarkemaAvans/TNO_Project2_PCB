@@ -75,9 +75,22 @@ class MES:
         self.robot.scene.add_box('backwall', p, (.01, 2, 2))
         time.sleep(.5)
 
+        #ADDING OBJECT1 ---------------------------------------------------
+        p = moveit_commander.PoseStamped()
+        p.header.frame_id = self.robot.robot.get_planning_frame()
+        p.pose.position.x = 0.5
+        p.pose.position.y = 0.5
+        p.pose.position.z = 0.01
+        self.robot.scene.add_box('OBJECT1', p, (0.05, 0.05, 0.02))
+        time.sleep(.5)
+
         self.finger_pub = rospy.Publisher('/move_group/fake_controller_joint_states',
                                                    sensor_msgs.msg.JointState,
                                                    queue_size=20)
+
+        if panda and not real:
+        	time.sleep(1)
+        	self.control_gripper('open')
         
 
     def go_to_cords(self):
@@ -130,6 +143,8 @@ class MES:
                 self.robot.go_to_pose_goal(x_place, y_place, z_place, self.rx, 
                     self.ry, self.rz)
 
+                self.control_gripper('close')
+
             elif taak.startswith('go_placeloc'):
                 # Update label
                 Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
@@ -150,6 +165,8 @@ class MES:
                 # And go down now
                 self.robot.go_to_pose_goal(x_place, y_place, z_place, self.rx, 
                     self.ry, self.rz)
+
+                self.control_gripper('open')
             
             else:
                 tkMessageBox.showerror('ERROR', 'Devolgende regel is niet '
