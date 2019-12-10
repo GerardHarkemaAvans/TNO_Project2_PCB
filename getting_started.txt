@@ -101,4 +101,8 @@ The packages that you need to use, are the following:
 
  Matj' Erdal has a custom package that you also can use. 
 
+====
+#To use rviz with ur5 or gripper
+	- roslaunch ur5_gripper_moveit_config demo.launch rviz_tutorial:=true
+
  
