@@ -18,8 +18,15 @@ Deze wss niet - later naar kijken
 	- git clone -b kinetic-devel https://github.com/ros-industrial/ur_modern_driver
 
 
-Pas ur5_moveit_config/config/controllers.yaml aan:
+Change in the following file ur5_moveit_config/config/controllers.yaml:
 	action_ns: scaled_pos_traj_controller/follow_joint_trajectory
+
+
+Remove the following file:
+	ur5_moveit_config/config/joint_limits.yaml
+And place TNO_Project2_PCB/config/joint_limits.yaml in ur5_moveit_config/config/
+
+
 
 
 To start a simulation, use these following steps:
