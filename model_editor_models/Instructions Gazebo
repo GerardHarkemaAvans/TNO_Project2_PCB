@@ -18,3 +18,37 @@ Optional: Changing path directory models
 1. Open a model.sdf
 2. search for <uri> and change the directory to the right directory
 Note: the files 'Robottafel' and 'Werktafel' do not have to be modified
+==============================================================
+Check file: 'ur5_robot_robotiq.urdf': 
+Otherwise the robot will spawn under the table.
+OLD:
+==============================================================
+ <link name="world" />
+    <joint name="world_joint" type="fixed">
+        <parent link="world" />
+        <child link="base_link" />
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0" />
+==============================================================
+
+Replace with:
+==============================================================
+<link name="world" />
+    <joint name="world_joint" type="fixed">
+        <parent link="world" />
+        <child link="base_link" />
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 1.15" />
+==============================================================
+
+
+
+Change 'world_name' path in file  'empty_world.launch' at location /opt/ros/kinetic/share/gazebo_ros/launch:
+==============================================================
+<arg name="output" default="screen"/>
+  <arg name="world_name" default="/home/dca/catkin_ws/src/TNO_Project2_PCB/model_editor_models/World/Werkopstelling"/> <!-- Note: the world_name is with respect to GAZEBO_RESOURCE_PATH environmental variable -->
+==============================================================
+
+in terminal:
+	- roslaunch gazebo_ros empty_world.launch paused:=true use_sim_time:=false gui:=true throttled:=false recording:=false debug:=true
+in second terminal (to spawn robot in world):
+	- rosrun gazebo_ros spawn_model -file /home/dca/catkin_ws/src/TNO_Project2_PCB/ur5MetGripper/ur5_robot_robotiq.urdf -urdf -x 0 -y 0 -z 1.15 -model ur5
+
