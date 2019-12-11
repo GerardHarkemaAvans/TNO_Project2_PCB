@@ -31,8 +31,6 @@ def mainLoop(device):
     pub = rospy.Publisher('Robotiq2FGripperRobotInput', inputMsg.Robotiq2FGripper_robot_input, queue_size=10)
 
     temp = inputMsg.Robotiq2FGripper_robot_input
-    print(dir(temp))
-    print(temp)
 
     #The Gripper command is received from the topic named 'Robotiq2FGripperRobotOutput'
     rospy.Subscriber('Robotiq2FGripperRobotOutput', outputMsg.Robotiq2FGripper_robot_output, gripper.refreshCommand)
