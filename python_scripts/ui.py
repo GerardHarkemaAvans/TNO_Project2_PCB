@@ -20,12 +20,10 @@ import math
 import time
 import sys
 
-# Note ik heb ff iets aangepast bij controllers.yaml
-# joint limits:
-# basis: -60 tot 60 graden = -1.0471 tot 1.0471
-# schouder -100 tot -30 = -1.7453 tot -0.5235
-
-
+# Notes van x, y, z, w naar rx, ry, rz:
+# from geometry_msgs.msg import Quaternion
+# rot = Quaternion(x, y, z, w)
+# rot.deserialize
 
 
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
@@ -99,10 +97,11 @@ class MES:
             sensor_msgs.msg.JointState,
             queue_size=20)
 
-        if panda and not real:
-            time.sleep(1)
-            print('OPENING GRIPPER')
-            self.control_gripper(100)
+        # if panda and not real:
+        #     time.sleep(1)
+        #     print('OPENING GRIPPER')
+        #     self.control_gripper(100)
+        #     time.sleep(1.5)
         
 
     def go_to_cords(self):
@@ -127,12 +126,13 @@ class MES:
         for i, taak in enumerate(self.inhoud.split('\n')):
             Label(self.root, bg='red', text=taak.replace('_', ' ').replace(
                 '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
+        self.control_gripper(100)  # always open gripper b4 starting
+        time.sleep(1.2)
 
         for i, taak in enumerate(self.inhoud.split('\n')):
             x = self.robot.group.get_current_pose().pose.position.x
             y = self.robot.group.get_current_pose().pose.position.y
             z = self.robot.group.get_current_pose().pose.position.z
-            #self.control_gripper(100)  # always open gripper b4 starting
 
             # We have to to -1 bc python starts counting at 0
             # Read product location
@@ -164,6 +164,7 @@ class MES:
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
                 print('CLOSE GRIPPER')
                 self.control_gripper(0)
+                time.sleep(1.2)
 
                 # Read product approach location details
                 idx = int(taak.split('-')[1]) - 1 
@@ -196,6 +197,7 @@ class MES:
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
                 print('OPENING GRIPPER')
                 self.control_gripper(100)
+                time.sleep(1.2)
                 # And go up again
                 self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
 
