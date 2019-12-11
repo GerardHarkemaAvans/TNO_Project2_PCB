@@ -30,7 +30,7 @@ import sys
 
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
 roslib.load_manifest('robotiq_2f_gripper_control')
-from Robotiq2FGripperRtuNode import mainLoop
+# from Robotiq2FGripperRtuNode import mainLoop
 
 
 GRIPPERPORT = '/dev/ttyUSB0'
@@ -132,6 +132,7 @@ class MES:
             x = self.robot.group.get_current_pose().pose.position.x
             y = self.robot.group.get_current_pose().pose.position.y
             z = self.robot.group.get_current_pose().pose.position.z
+            self.control_gripper(100)
 
             # We have to to -1 bc python starts counting at 0
             # Read product location
@@ -295,9 +296,7 @@ class MES:
             raise TypeError('Must take an int as arg')
         if action > 100 or action < 0:
             raise ValueError('input too big or too small')
-        action_to_255 = int(action * 2.55)
-        print('action to 255: ')
-        print(action_to_255)
+        action_to_255 = 255 - int(action * 2.55)
 
         if real and ur5:
             if not MAINLOOPRUNNING:
