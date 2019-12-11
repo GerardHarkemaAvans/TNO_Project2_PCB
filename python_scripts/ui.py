@@ -84,9 +84,18 @@ class MES:
         self.robot.scene.add_box('backholder1', p, (.2, .2, .1))
         time.sleep(.5)
 
+        #ADDING OBJECT1 ---------------------------------------------------
+        p = moveit_commander.PoseStamped()
+        p.header.frame_id = self.robot.robot.get_planning_frame()
+        p.pose.position.x = 0.5
+        p.pose.position.y = 0.5
+        p.pose.position.z = 0.01
+        self.robot.scene.add_box('OBJECT1', p, (0.05, 0.05, 0.02))
+        time.sleep(.5)
+
         self.finger_pub = rospy.Publisher('/move_group/fake_controller_joint_states',
                                                    sensor_msgs.msg.JointState,
-                                                   queue_size=20)
+                                                   queue_size=20
         if panda and not real:
             time.sleep(1)
             print('OPENING GRIPPER')
@@ -159,7 +168,7 @@ class MES:
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
-
+                self.control_gripper('close')
 
             elif taak.startswith('go_placeloc'):
                 # Read product location details
@@ -182,10 +191,7 @@ class MES:
                 # First go above the product
                 self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
                 # And go down now
-                self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
-                # GRIPPER SLUITEN
-                # self.control_gripper('close')
-                self.go_up()
+
             
             else:
                 tkMessageBox.showerror('ERROR', 'Devolgende regel is niet '
