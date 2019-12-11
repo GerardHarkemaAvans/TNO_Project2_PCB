@@ -132,7 +132,7 @@ class MES:
             x = self.robot.group.get_current_pose().pose.position.x
             y = self.robot.group.get_current_pose().pose.position.y
             z = self.robot.group.get_current_pose().pose.position.z
-            self.control_gripper(100)
+            #self.control_gripper(100)  # always open gripper b4 starting
 
             # We have to to -1 bc python starts counting at 0
             # Read product location
@@ -162,6 +162,8 @@ class MES:
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
+                print('CLOSE GRIPPER')
+                self.control_gripper(0)
 
                 # Read product approach location details
                 idx = int(taak.split('-')[1]) - 1 
@@ -172,9 +174,13 @@ class MES:
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
-                self.control_gripper(0)
 
             elif taak.startswith('go_placeloc'):
+                # Update label
+                Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
+                    '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
+                time.sleep(0.03)
+
                 # Read product location details
                 idx = int(taak.split('-')[1]) - 1 
                 product_location = self.robot.place_locations[idx]
@@ -184,19 +190,15 @@ class MES:
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
 
-                # Update label
-                Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
-                    '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
-                time.sleep(0.03)
-
-                # START BY GOING TO 30 CM HEIGHT -----------------------------
-                self.go_up()
-
                 # First go above the product
                 self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
                 # And go down now
+                self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
+                print('OPENING GRIPPER')
+                self.control_gripper(100)
+                # And go up again
+                self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
 
-            
             else:
                 tkMessageBox.showerror('ERROR', 'Devolgende regel is niet '
                     'herkend\n' + taak)

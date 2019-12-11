@@ -33,23 +33,38 @@ class MoveGroupPythonInteface(object):
                                                        queue_size=20)
         # PRODUCT PARAMETERS----------
         ## All the inner lists must have 7 elements
-        self.product_app_loc = [
-                            [.3678, .5182, .3, 3.14, 0, 0.78],
-                            [.5743, .2982, .0153, -3.14, -0.78, 0],
-                            [],
-        ]
-        self.product_locations = [
-                            [.3678, .5182, .2, 3.14, 0, 0.78], 
-                            [.5743, .3982, .0153, -3.14, -0.78, 0],
-                            [.4, -.4, .14],
-                        ]
-        self.place_locations = [
-                            [.66, 0, .08],
-                            [.66, 0, .1],
-                            [.66, 0, .11],
-                        ]
-        assert len(self.place_locations) == len(self.product_locations)
-        self.productcount = len(self.product_locations)
+        if robot_name == 'ur5':
+            self.product_app_loc = [
+                                [.3678, .5182, .3, 3.14, 1.57, 0],
+                                [.5743, .2982, .0153, 3.14, 0, 1.57],
+                                [],
+            ]
+            self.product_locations = [
+                                [.3678, .5182, .2, 3.14, 1.57, 0], 
+                                [.5743, .3982, .0153, 3.14, 0, 1.57],
+                                [.5402, .4, .14],
+                            ]
+            self.place_locations = [
+                                [.66, 0.0, .08],
+                                [.66, 0.0, .08],
+                                [.66, 0.0, .08],
+                            ]
+        elif robot_name == 'panda'
+            self.product_app_loc = [
+                                [.3678, .5182, .3, 3.14, 0, 0.78],
+                                [.5743, .2982, .0153, -3.14, -0.78, 0],
+                                [],
+            ]
+            self.product_locations = [
+                                [.3678, .5182, .2, 3.14, 0, 0.78], 
+                                [.5743, .3982, .0153, -3.14, -0.78, 0],
+                                [.4, -.4, .14],
+                            ]
+            self.place_locations = [
+                                [.66, 0, .08],
+                                [.66, 0, .1],
+                                [.66, 0, .11],
+                            ]
 
     def go_to_pose_goal(self, x, y, z, rx=pi, ry=0, rz=0, w=None):
         group = self.group
