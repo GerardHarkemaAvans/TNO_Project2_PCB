@@ -94,9 +94,11 @@ class MES:
         self.robot.scene.add_box('OBJECT1', p, (0.05, 0.05, 0.02))
         time.sleep(.5)
 
-        self.finger_pub = rospy.Publisher('/move_group/fake_controller_joint_states',
-                                                   sensor_msgs.msg.JointState,
-                                                   queue_size=20)
+        self.finger_pub = rospy.Publisher(
+            '/move_group/fake_controller_joint_states',
+            sensor_msgs.msg.JointState,
+            queue_size=20)
+
         if panda and not real:
             time.sleep(1)
             print('OPENING GRIPPER')
@@ -192,10 +194,7 @@ class MES:
                 # First go above the product
                 self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
                 # And go down now
-                self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
-                # GRIPPER SLUITEN
-                self.control_gripper(100)
-                self.go_up()
+
             
             else:
                 tkMessageBox.showerror('ERROR', 'Devolgende regel is niet '
