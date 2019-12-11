@@ -39,14 +39,14 @@ class MoveGroupPythonInteface(object):
                             [],
         ]
         self.product_locations = [
-                            [.1, .5, .14, 3.14, 0, 0.78], 
-                            [.4, .4, .14, -1.57, -0.78, 0],
-                            [.4, -.4, .14, -3.14, -1.57, -1.57],
+                            [.3678, .5182, .2, 3.14, 1.57, 0], 
+                            [.5743, .3982, .0153, 3.14, 0, 1.57],
+                            [.4, -.4, .14],
                         ]
         self.place_locations = [
-                            [.5, 0, .2, 3.14, 0, 2.35],
-                            [.5, 0, .2, 3.14, 0, 2.35],
-                            [.5, 0, .2, 3.14, 0, 2.35],
+                            [.66, 0, .08],
+                            [.5, 0, .1],
+                            [.5, 0, .11],
                         ]
         assert len(self.place_locations) == len(self.product_locations)
         self.productcount = len(self.product_locations)
