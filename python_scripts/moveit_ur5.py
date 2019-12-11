@@ -34,14 +34,14 @@ class MoveGroupPythonInteface(object):
         # PRODUCT PARAMETERS----------
         ## All the inner lists must have 7 elements
         self.product_locations = [
-                            [.6402, -.5817, .1413], 
-                            [.6402, -.5817, .1413],
-                            [.6402, -.5817, .1413],
+                            [.1, .5, .14, 3.14, 0, 0.78], 
+                            [.4, .4, .14, -1.57, -0.78, 0],
+                            [.4, -.4, .14, -3.14, -1.57, -1.57],
                         ]
         self.place_locations = [
-                            [.6626, .4835, .1484],
-                            [.6626, .4835, .1484],
-                            [.6626, .4835, .1484],
+                            [.5, 0, .2, 3.14, 0, 2.35],
+                            [.5, 0, .2, 3.14, 0, 2.35],
+                            [.5, 0, .2, 3.14, 0, 2.35],
                         ]
         assert len(self.place_locations) == len(self.product_locations)
         self.productcount = len(self.product_locations)

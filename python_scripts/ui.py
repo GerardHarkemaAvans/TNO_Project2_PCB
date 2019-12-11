@@ -75,15 +75,6 @@ class MES:
         self.robot.scene.add_box('backwall', p, (.01, 2, 2))
         time.sleep(.2)
 
-        #ADDING BACK HOLDER --------------------------------------------------
-        p = moveit_commander.PoseStamped()
-        p.header.frame_id = self.robot.robot.get_planning_frame()
-        p.pose.position.x = .66
-        p.pose.position.y = -.2
-        p.pose.position.z = .2
-        self.robot.scene.add_box('backholder1', p, (.2, .2, .1))
-        time.sleep(.5)
-
         #ADDING OBJECT1 ---------------------------------------------------
         p = moveit_commander.PoseStamped()
         p.header.frame_id = self.robot.robot.get_planning_frame()
@@ -93,9 +84,11 @@ class MES:
         self.robot.scene.add_box('OBJECT1', p, (0.05, 0.05, 0.02))
         time.sleep(.5)
 
-        self.finger_pub = rospy.Publisher('/move_group/fake_controller_joint_states',
-                                                   sensor_msgs.msg.JointState,
-                                                   queue_size=20
+        self.finger_pub = rospy.Publisher(
+            '/move_group/fake_controller_joint_states',
+            sensor_msgs.msg.JointState,
+            queue_size=20)
+
         if panda and not real:
             time.sleep(1)
             print('OPENING GRIPPER')
@@ -180,6 +173,7 @@ class MES:
                 self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
                 # And go down now
 
+                self.control_gripper('open')
             
             else:
                 tkMessageBox.showerror('ERROR', 'Devolgende regel is niet '
