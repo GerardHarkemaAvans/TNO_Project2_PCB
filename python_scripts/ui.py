@@ -27,6 +27,7 @@ import sys
 
 
 
+
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
 roslib.load_manifest('robotiq_2f_gripper_control')
 from Robotiq2FGripperRtuNode import mainLoop
@@ -95,11 +96,11 @@ class MES:
 
         self.finger_pub = rospy.Publisher('/move_group/fake_controller_joint_states',
                                                    sensor_msgs.msg.JointState,
-                                                   queue_size=20
+                                                   queue_size=20)
         if panda and not real:
             time.sleep(1)
             print('OPENING GRIPPER')
-            self.control_gripper('open')
+            self.control_gripper(100)
         
 
     def go_to_cords(self):
@@ -168,7 +169,7 @@ class MES:
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
-                self.control_gripper('close')
+                self.control_gripper(0)
 
             elif taak.startswith('go_placeloc'):
                 # Read product location details
@@ -191,7 +192,10 @@ class MES:
                 # First go above the product
                 self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
                 # And go down now
-
+                self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
+                # GRIPPER SLUITEN
+                self.control_gripper(100)
+                self.go_up()
             
             else:
                 tkMessageBox.showerror('ERROR', 'Devolgende regel is niet '
@@ -262,9 +266,9 @@ class MES:
         # GRIPPER BUTTONS ----------------------------------------------------
         Label(self.root, text='Gripper control').grid(row=11+idx, sticky=W,
             columnspan=2)
-        Button(self.root, text='open', command=lambda: self.control_gripper('open')
+        Button(self.root, text='open', command=lambda: self.control_gripper(100)
             ).grid(row=12+idx, sticky=W+E, column=0)
-        Button(self.root, text='close', command=lambda: self.control_gripper('close')
+        Button(self.root, text='close', command=lambda: self.control_gripper(0)
             ).grid(row=12+idx, sticky=W, column=1)
 
         # BOXEN TOEVOEGEN ----------------------------------------------------
@@ -284,12 +288,17 @@ class MES:
 
 
     def control_gripper(self, action):
-        '''action must be in ['open', 'close']
-        '''
         global MAINLOOPRUNNING, pub
 
-        if action not in ['open', 'close']:
-            raise ValueError('Bad input')
+        try:
+            action = int(action)
+        except Exception:
+            raise TypeError('Must take an int as arg')
+        if action > 100 or action < 0:
+            raise ValueError('input too big or too small')
+        action_to_255 = int(action * 2.55)
+        print('action to 255: ')
+        print(action_to_255)
 
         if real and ur5:
             if not MAINLOOPRUNNING:
@@ -307,27 +316,17 @@ class MES:
                 time.sleep(1)
 
             command = outputMsg.Robotiq2FGripper_robot_output()
-            if action == 'open':
-                command.rACT = 1
-                command.rGTO = 1
-                command.rATR = 0
-                command.rPR = 0
-                command.rSP = 255
-                command.rFR = 25
-            if action == 'close':
-                command.rACT = 1
-                command.rGTO = 1
-                command.rATR = 0
-                command.rPR = 255
-                command.rSP = 255
-                command.rFR = 25
+            command.rACT = 1
+            command.rGTO = 1
+            command.rATR = 0
+            command.rPR = action_to_255
+            command.rSP = 255
+            command.rFR = 25
             pub.publish(command)
         
         if panda:
-            if action == 'open':
-                value = 0.04
-            else:
-                value = 0.
+            value = action / 100 * 0.04
+            print(value)
             jointstate = sensor_msgs.msg.JointState()
             jointstate.name += ['panda_finger_joint1', 'panda_joint1', 
             'panda_joint2', 'panda_joint3', 'panda_joint4', 'panda_joint5', 
