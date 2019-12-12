@@ -19,14 +19,9 @@ import math
 import time
 import sys
 
-# Note ik heb ff iets aangepast bij controllers.yaml
-# joint limits:
-# basis: -60 tot 60 graden = -1.0471 tot 1.0471
-# schouder -100 tot -30 = -1.7453 tot -0.5235
-
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
 roslib.load_manifest('robotiq_2f_gripper_control')
-from Robotiq2FGripperRtuNode import mainLoop
+# from Robotiq2FGripperRtuNode import mainLoop
 
 
 GRIPPERPORT = '/dev/ttyUSB0'
@@ -84,10 +79,11 @@ class MES:
             sensor_msgs.msg.JointState,
             queue_size=20)
 
-        if panda and not real:
-            time.sleep(1)
-            print('OPENING GRIPPER')
-            self.control_gripper('open')
+        # if panda and not real:
+        #     time.sleep(1)
+        #     print('OPENING GRIPPER')
+        #     self.control_gripper(100)
+        #     time.sleep(1.5)
         
 
     def add_box(self):
@@ -181,18 +177,21 @@ class MES:
             self.robot.go_to_pose_goal(x, y, 0.3, self.rx, self.ry, 
                 self.rz)
 
-    def execute_all(self):
-        self.add_box()
+    def execute_all(self, gripper=False):
+    	self.add_box()
         for i, taak in enumerate(self.inhoud.split('\n')):
             Label(self.root, bg='red', text=taak.replace('_', ' ').replace(
                 '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
+        if gripper:
+            self.control_gripper(100)  # always open gripper b4 starting
+            time.sleep(1.2)
 
         for i, taak in enumerate(self.inhoud.split('\n')):
             x = self.robot.group.get_current_pose().pose.position.x
             y = self.robot.group.get_current_pose().pose.position.y
             z = self.robot.group.get_current_pose().pose.position.z
 
-            #Adding three boxes to the scene
+          
             
 
             # We have to to -1 bc python starts counting at 0
@@ -225,22 +224,27 @@ class MES:
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
-                self.control_gripper('close')
-                self.attach_box(i)
-                time.sleep(0.05)
+                if gripper:
+                    self.control_gripper(0)
+                    self.attach_box(i)
+                    time.sleep(1.2)
 
-                # Read product approach location details
+                # Read product leave location details
                 idx = int(taak.split('-')[1]) - 1 
-                product_location = self.robot.product_app_loc[idx]
+                product_location = self.robot.product_leave_loc[idx]
                 if len(product_location) == 3:
                     gx, gy, gz = product_location
                     grx, gry, grz = 3.14, 1.57, 0  # todo aanpassen voor panda
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
-        
 
             elif taak.startswith('go_placeloc'):
+                # Update label
+                Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
+                    '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
+                time.sleep(0.03)
+
                 # Read product location details
                 idx = int(taak.split('-')[1]) - 1 
                 product_location = self.robot.place_locations[idx]
@@ -250,22 +254,17 @@ class MES:
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
 
-                # Update label
-                Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
-                    '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
-                time.sleep(0.03)
-
-                # START BY GOING TO 30 CM HEIGHT -----------------------------
-                self.go_up()
-
                 # First go above the product
                 self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
                 # And go down now
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
-                self.control_gripper('open')
+                if gripper:
+                    self.control_gripper(100)
+                    time.sleep(1.2)
+                # And go up again
+                self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
                 self.detach_box(i)
-                time.sleep(0.05)
-            
+
             else:
                 tkMessageBox.showerror('ERROR', 'Devolgende regel is niet '
                     'herkend\n' + taak)
@@ -336,9 +335,9 @@ class MES:
         # GRIPPER BUTTONS ----------------------------------------------------
         Label(self.root, text='Gripper control').grid(row=11+idx, sticky=W,
             columnspan=2)
-        Button(self.root, text='open', command=lambda: self.control_gripper('open')
+        Button(self.root, text='open', command=lambda: self.control_gripper(100)
             ).grid(row=12+idx, sticky=W+E, column=0)
-        Button(self.root, text='close', command=lambda: self.control_gripper('close')
+        Button(self.root, text='close', command=lambda: self.control_gripper(0)
             ).grid(row=12+idx, sticky=W, column=1)
 
         # BOXEN TOEVOEGEN ----------------------------------------------------
@@ -358,12 +357,15 @@ class MES:
 
 
     def control_gripper(self, action):
-        '''action must be in ['open', 'close']
-        '''
         global MAINLOOPRUNNING, pub
 
-        if action not in ['open', 'close']:
-            raise ValueError('Bad input')
+        try:
+            action = int(action)
+        except Exception:
+            raise TypeError('Must take an int as arg')
+        if action > 100 or action < 0:
+            raise ValueError('input too big or too small')
+        action_to_255 = 255 - int(action * 2.55)
 
         if real and ur5:
             if not MAINLOOPRUNNING:
@@ -381,27 +383,17 @@ class MES:
                 time.sleep(1)
 
             command = outputMsg.Robotiq2FGripper_robot_output()
-            if action == 'open':
-                command.rACT = 1
-                command.rGTO = 1
-                command.rATR = 0
-                command.rPR = 0
-                command.rSP = 255
-                command.rFR = 25
-            if action == 'close':
-                command.rACT = 1
-                command.rGTO = 1
-                command.rATR = 0
-                command.rPR = 255
-                command.rSP = 255
-                command.rFR = 25
+            command.rACT = 1
+            command.rGTO = 1
+            command.rATR = 0
+            command.rPR = action_to_255
+            command.rSP = 255
+            command.rFR = 25
             pub.publish(command)
         
         if panda:
-            if action == 'open':
-                value = 0.04
-            else:
-                value = 0.
+            value = action / 100 * 0.04
+            print(value)
             jointstate = sensor_msgs.msg.JointState()
             jointstate.name += ['panda_finger_joint1', 'panda_joint1', 
             'panda_joint2', 'panda_joint3', 'panda_joint4', 'panda_joint5', 
