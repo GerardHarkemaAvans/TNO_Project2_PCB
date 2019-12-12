@@ -1,2 +1,6 @@
 go_product-1
 go_placeloc-1
+go_product-2
+go_placeloc-2
+go_product-3
+go_placeloc-3
