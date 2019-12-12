@@ -35,24 +35,29 @@ class MoveGroupPythonInteface(object):
         ## All the inner lists must have 7 elements
         if robot_name == 'ur5':
             self.product_app_loc = [
-                                [.3678, .5182, .3, 3.14, 1.57, 0],
-                                [.5743, .2982, .0153, 3.14, 0, 1.57],
-                                [.6916, -.0132, .3, 1.57, 1, -1.65],
+                                [.38, .5437, .3622, -1.57, 1.57, 0],
+                                [.607, .21, -.01, 1.57, 0, 1.57],
+                                [.693, -.03, .3, 1.5, 1.05, -1.65],
             ]
             self.product_locations = [
-                                [.3678, .5182, .1, 3.14, 1.57, 0], 
-                                [.5743, .3982, .0153, 3.14, 0, 1.57],
-                                [.6916, -.1132, .152, 1.57, 1, -1.65],
-                            ]
-            self.product_leave_loc = [
-                                [.3678, .5182, .3, 3.14, 1.57, 0],
-                                [.5743, .3982, .2, 3.14, 0, 1.57],
-                                [.6916, -.0132, .3, 1.57, 1, -1.65],
+                                [.38, .5435, .165, -1.57, 1.57, 0], 
+                                [.607, .235, -.01, 1.57, 0, 1.57],
+                                [.693, -.133, .167, 1.5, 1.05, -1.65],
+                            ] 
+            self.product_leave_loc1 = [
+                                [.39, .53, .175, -1.57, 1.57, 0],
+                                [.607, .235, .1, 1.57, 0, 1.57],
+                                [.693, -.03, .3, 1.5, 1.05, -1.65],
+            ]
+            self.product_leave_loc2 = [
+                                [.39, .5, .5, -1.57, 1.57, 0],
+                                [],
+                                [],
             ]
             self.place_locations = [
-                                [.66, 0.0, .08],
-                                [.66, 0.0, .08],
-                                [.66, 0.0, .08],
+                                [.673, -.008, .165, 0.01, 1.59, 0],
+                                [.673, -.008, .18, 3.14, 1.59, 0],
+                                [.674, -.01, .2, .01, 1.59, 0],
                             ]
         elif robot_name == 'panda':
             self.product_app_loc = [
@@ -84,10 +89,6 @@ class MoveGroupPythonInteface(object):
         # Calling stop() ensures that there is no residual movement
         group.stop()
         group.clear_pose_targets()
-
-        # # Kunnen weg?
-        current_pose = self.group.get_current_pose().pose
-        # return all_close(pose_goal, current_pose, 0.01)
 
     def get_pose():
         return self.group.get_current_pose().pose

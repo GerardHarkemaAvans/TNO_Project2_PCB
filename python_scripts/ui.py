@@ -62,7 +62,10 @@ class MES:
         p.header.frame_id = self.robot.robot.get_planning_frame()
         p.pose.position.x = 0
         p.pose.position.y = 0
-        p.pose.position.z = 0  # correctie dat tafel lager staat
+        if panda:
+            p.pose.position.z = 0  # correctie dat tafel lager staat
+        else:
+            p.pose.position.z = -0.06
         self.robot.scene.add_box('table', p, (1.25, 1.25, .01))
         time.sleep(.2)
 
@@ -71,7 +74,7 @@ class MES:
         p.header.frame_id = self.robot.robot.get_planning_frame()
         p.pose.position.x = -.25
         p.pose.position.y = 0
-        p.pose.position.z = 0
+        p.pose.position.z = 0   
         self.robot.scene.add_box('backwall', p, (.01, 2, 2))
         time.sleep(.2)
 
@@ -210,6 +213,7 @@ class MES:
                     grx, gry, grz = 3.14, 1.57, 0  # todo aanpassen voor panda
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
+                print('Going to product app loc')
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
 
                 # Read product location details
@@ -220,8 +224,10 @@ class MES:
                     grx, gry, grz = 3.14, 1.57, 0  # todo aanpassen voor panda
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
+                print('Going to product location')
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
                 if gripper:
+                    print('Closing gripper')
                     self.control_gripper(0)
                     time.sleep(1.2)
                     if not real:
@@ -229,13 +235,26 @@ class MES:
 
                 # Read product leave location details
                 idx = int(taak.split('-')[1]) - 1 
-                product_location = self.robot.product_leave_loc[idx]
+                product_location = self.robot.product_leave_loc1[idx]
                 if len(product_location) == 3:
                     gx, gy, gz = product_location
                     grx, gry, grz = 3.14, 1.57, 0  # todo aanpassen voor panda
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
+                    print('Going to product leave location 1')
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
+
+                # Read product leave location details
+                idx = int(taak.split('-')[1]) - 1 
+                product_location = self.robot.product_leave_loc2[idx]
+                if len(product_location):
+                    if len(product_location) == 3:
+                        gx, gy, gz = product_location
+                        grx, gry, grz = 3.14, 1.57, 0  # todo aanpassen voor panda
+                    else:
+                        gx, gy, gz, grx, gry, grz = product_location
+                    print('Going to product leave location 2')
+                    self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
 
             elif taak.startswith('go_placeloc'):
                 # Update label
