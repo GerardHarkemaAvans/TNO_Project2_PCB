@@ -2,6 +2,7 @@
 
 from trajectory_msgs.msg import JointTrajectoryPoint
 from trajectory_msgs.msg import JointTrajectory
+from moveit_ur5 import MoveGroupPythonInteface
 import geometry_msgs.msg
 import tf2_geometry_msgs
 import moveit_commander
@@ -177,8 +178,9 @@ class MES:
             self.robot.go_to_pose_goal(x, y, 0.3, self.rx, self.ry, 
                 self.rz)
 
-    def execute_all(self, gripper=False):
-    	self.add_box()
+    def execute_all(self):
+        if not real:
+        	self.add_box()
         for i, taak in enumerate(self.inhoud.split('\n')):
             Label(self.root, bg='red', text=taak.replace('_', ' ').replace(
                 '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
@@ -191,13 +193,6 @@ class MES:
             y = self.robot.group.get_current_pose().pose.position.y
             z = self.robot.group.get_current_pose().pose.position.z
 
-          
-            
-
-            # We have to to -1 bc python starts counting at 0
-            # Read product location
-
-
 
             if taak.startswith('go_product'):
                 # Update label
@@ -206,6 +201,8 @@ class MES:
                 time.sleep(0.03)
 
                 # Read product approach location details
+                # We have to to -1 bc python starts counting at 0
+                # Read product location
                 idx = int(taak.split('-')[1]) - 1 
                 product_location = self.robot.product_app_loc[idx]
                 if len(product_location) == 3:
@@ -226,8 +223,9 @@ class MES:
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
                 if gripper:
                     self.control_gripper(0)
-                    self.attach_box(i)
                     time.sleep(1.2)
+                    if not real:
+                        self.attach_box(i)
 
                 # Read product leave location details
                 idx = int(taak.split('-')[1]) - 1 
@@ -261,9 +259,10 @@ class MES:
                 if gripper:
                     self.control_gripper(100)
                     time.sleep(1.2)
+                    if not real:
+                        self.detach_box(i)
                 # And go up again
                 self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
-                self.detach_box(i)
 
             else:
                 tkMessageBox.showerror('ERROR', 'Devolgende regel is niet '
@@ -340,6 +339,7 @@ class MES:
         Button(self.root, text='close', command=lambda: self.control_gripper(0)
             ).grid(row=12+idx, sticky=W, column=1)
 
+        '''
         # BOXEN TOEVOEGEN ----------------------------------------------------
         Label(self.root, text='Box toevoegen').grid(row=13+idx, sticky=W, 
             columnspan=2)
@@ -352,6 +352,7 @@ class MES:
         self.boxname.grid(row=15+idx+idx2, column=1)
         Button(self.root, text='Toevoegen', command=self.add_objects).grid(
             row=17+idx+idx2, columnspan=2, sticky=W+E)
+        '''
 
         self.root.mainloop()
 
@@ -454,23 +455,9 @@ def activate_gripper_thread():
 
 
 def main():
-    global ur5, panda, real, MoveGroupPythonInteface
-    ur5, panda, real = False, False, False
+    global ur5, panda, real, gripper
+    ur5, panda, real, gripper = False, False, False, False
     robot_name = raw_input("[ur5] or [panda]: ")
-
-    ## For debugging
-    # robot_name = 'ur5'
-    # robot_name = 'panda'
-
-    resp = raw_input('simulation or real hardware? s/[r] ')
-    if resp == 's':
-        real = False
-    elif resp == 'r':
-        real = True
-    else:
-        print('Bad input')
-        return
-
     if robot_name.lower() in ['ur5', 'u']:
         robot_name = 'ur5'
         ur5 = True
@@ -481,13 +468,24 @@ def main():
         print('Bad input')
         return
 
-    if ur5:
-        from moveit_ur5 import MoveGroupPythonInteface
-    if panda:
-        from moveit_panda import MoveGroupPythonInteface
+    resp = raw_input('simulation or real hardware? s/[r] ')
+    if resp == 's':
+        real = False
+    elif resp == 'r':
+        real = True
+    else:
+        print('Bad input')
+        return
+
+    resp = raw_input('gripper? y/[n]: ')
+    if resp.lower() in ['y', 'j', 'yes', 'ja']:
+        gripper = True
+    elif resp.lower() not in ['n', 'no', 'ne', 'nee']:
+        print('Bad input')
+        return
 
     resp = 'y'
-    resp = raw_input("open 'roslaunch files? Y/[N]: ")
+    resp = raw_input("open 'roslaunch files? y/[n]: ")
     if resp.lower() in ['y', 'j', 'yes', 'ja']:
         roslaunch_thread()
     elif resp.lower() not in ['n', 'no', 'ne', 'nee']:
