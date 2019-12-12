@@ -20,6 +20,8 @@ class MoveGroupPythonInteface(object):
         self.robot = moveit_commander.RobotCommander()
         self.scene = moveit_commander.PlanningSceneInterface()
         self.robot_name = robot_name
+
+
         time.sleep(.5)
         if robot_name == 'ur5':
             group_name = "manipulator"
@@ -31,22 +33,24 @@ class MoveGroupPythonInteface(object):
         self.display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
                                                        moveit_msgs.msg.DisplayTrajectory,
                                                        queue_size=20)
+
         # PRODUCT PARAMETERS----------
         ## All the inner lists must have 7 elements
         self.product_app_loc = [
-                            [.3678, .5182, .3, 3.14, 0, 0.78],
-                            [.5743, .2982, .0153, -3.14, -0.78, 0],
-                            [],
+                            [.3, .5, .3, 3.14, 0, 0.78],
+                            [.6, .3, .07, -1.57, -0.78, 0],
+                            [.3, -.3, .3, 2.356, 0.6, 0.6],
         ]
+
         self.product_locations = [
-                            [.3678, .5182, .2, 3.14, 0, 0.78], 
-                            [.5743, .3982, .0153, -3.14, -0.78, 0],
-                            [.4, -.4, .14],
+                            [.3, .5, .15, 3.14, 0, 0.78], 
+                            [.6, .4, .07, -1.57, -0.78, 0],
+                            [.3, -.3, .15, 2.356, 0.6, 0.6],
                         ]
         self.place_locations = [
-                            [.66, 0, .08],
-                            [.66, 0, .1],
-                            [.66, 0, .11],
+                            [.5, 0, .15, 3.14, 0, 2.356],
+                            [.5, 0, .2, 3.14, 0, 2.356],
+                            [.5, 0, .25, 3.14, 0, 2.356],
                         ]
         assert len(self.place_locations) == len(self.product_locations)
         self.productcount = len(self.product_locations)

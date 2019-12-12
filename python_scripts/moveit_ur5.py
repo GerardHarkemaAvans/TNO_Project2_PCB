@@ -33,23 +33,48 @@ class MoveGroupPythonInteface(object):
                                                        queue_size=20)
         # PRODUCT PARAMETERS----------
         ## All the inner lists must have 7 elements
-        self.product_app_loc = [
-                            [.3678, .5182, .3, 3.14, 0, 0.78],
-                            [.5743, .2982, .0153, -3.14, -0.78, 0],
-                            [],
-        ]
-        self.product_locations = [
-                            [.3678, .5182, .2, 3.14, 0, 0.78], 
-                            [.5743, .3982, .0153, -3.14, -0.78, 0],
-                            [.4, -.4, .14],
-                        ]
-        self.place_locations = [
-                            [.66, 0, .08],
-                            [.66, 0, .1],
-                            [.66, 0, .11],
-                        ]
-        assert len(self.place_locations) == len(self.product_locations)
-        self.productcount = len(self.product_locations)
+        if robot_name == 'ur5':
+            self.product_app_loc = [
+                                [.3678, .5182, .3, 3.14, 1.57, 0],
+                                [.5743, .2982, .0153, 3.14, 0, 1.57],
+                                [.6916, -.0132, .3, 1.57, 1, -1.65],
+            ]
+            self.product_locations = [
+                                [.3678, .5182, .1, 3.14, 1.57, 0], 
+                                [.5743, .3982, .0153, 3.14, 0, 1.57],
+                                [.6916, -.1132, .152, 1.57, 1, -1.65],
+                            ]
+            self.product_leave_loc = [
+                                [.3678, .5182, .3, 3.14, 1.57, 0],
+                                [.5743, .3982, .2, 3.14, 0, 1.57],
+                                [.6916, -.0132, .3, 1.57, 1, -1.65],
+            ]
+            self.place_locations = [
+                                [.66, 0.0, .08],
+                                [.66, 0.0, .08],
+                                [.66, 0.0, .08],
+                            ]
+        elif robot_name == 'panda':
+            self.product_app_loc = [
+                                [.3678, .5182, .3, 3.14, 0, 0.78],
+                                [.5743, .2982, .07, -1.57, -0.78, 0],
+                                [.6916, -.0132, .3, 2.356, 0.6, 0.6],
+            ]
+            self.product_locations = [
+                                [.3678, .5182, .15, 3.14, 0, 0.78], 
+                                [.5743, .3982, .07, -1.57, -0.78, 0],
+                                [.6916, -.1132, .152, 2.356, 0.6, 0.6],
+                            ]
+            self.product_leave_loc = [
+                                [.3678, .5182, .3, 3.14, 0, 0.78],
+                                [.5743, .3982, .2, -1.57, -0.78, 0],
+                                [.6916, -.0132, .3, 2.356, 0.6, 0.6],
+            ]
+            self.place_locations = [
+                                [.66, 0, .13, 3.14, 0, 2.356],
+                                [.66, 0, .162, 3.14, 0, 2.356],
+                                [.66, 0, .194, 3.14, 0, 2.356],
+                            ]
 
     def go_to_pose_goal(self, x, y, z, rx=pi, ry=0, rz=0, w=None):
         group = self.group
