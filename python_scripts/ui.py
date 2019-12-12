@@ -122,12 +122,13 @@ class MES:
             self.robot.go_to_pose_goal(x, y, 0.3, self.rx, self.ry, 
                 self.rz)
 
-    def execute_all(self):
+    def execute_all(self, gripper=False):
         for i, taak in enumerate(self.inhoud.split('\n')):
             Label(self.root, bg='red', text=taak.replace('_', ' ').replace(
                 '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
-        self.control_gripper(100)  # always open gripper b4 starting
-        time.sleep(1.2)
+        if gripper:
+            self.control_gripper(100)  # always open gripper b4 starting
+            time.sleep(1.2)
 
         for i, taak in enumerate(self.inhoud.split('\n')):
             x = self.robot.group.get_current_pose().pose.position.x
@@ -162,13 +163,13 @@ class MES:
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
-                print('CLOSE GRIPPER')
-                self.control_gripper(0)
-                time.sleep(1.2)
+                if gripper:
+                    self.control_gripper(0)
+                    time.sleep(1.2)
 
-                # Read product approach location details
+                # Read product leave location details
                 idx = int(taak.split('-')[1]) - 1 
-                product_location = self.robot.product_app_loc[idx]
+                product_location = self.robot.product_leave_loc[idx]
                 if len(product_location) == 3:
                     gx, gy, gz = product_location
                     grx, gry, grz = 3.14, 1.57, 0  # todo aanpassen voor panda
@@ -195,9 +196,9 @@ class MES:
                 self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
                 # And go down now
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
-                print('OPENING GRIPPER')
-                self.control_gripper(100)
-                time.sleep(1.2)
+                if gripper:
+                    self.control_gripper(100)
+                    time.sleep(1.2)
                 # And go up again
                 self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
 
