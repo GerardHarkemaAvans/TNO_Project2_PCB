@@ -35,7 +35,7 @@ To start a simulation, use these following steps:
 			# enx00e04c680f64 is the name of the ethernet cable ur5
 	- execute in the same ternimal:
 		roslaunch ur_robot_driver ur5_bringup.launch robot_ip:=192.168.1.102 \
-            kinematics_config:=$HOME/my_robot_calibration.yaml
+            kinematics_config:=$HOME/ur5_calibration.yaml
     - now start "urcapexternalcontrol.urp" on the ur5
 	- execute in a second terminal:
 		roslaunch ur5_moveit_config ur5_moveit_planning_execution.launch limited:=true

@@ -98,8 +98,8 @@ class MES:
         #ADDING OBJECT1 ---------------------------------------------------
         p = moveit_commander.PoseStamped()
         p.header.frame_id = self.robot.robot.get_planning_frame()
-        p.pose.position.x = 0.3
-        p.pose.position.y = 0.5
+        p.pose.position.x = 0.3678
+        p.pose.position.y = 0.5182
         p.pose.position.z = 0.04
         self.robot.scene.add_box('OBJECT1', p, (0.06, 0.06, 0.02))
         time.sleep(.5)
@@ -108,19 +108,19 @@ class MES:
         # #ADDING OBJECT2 ---------------------------------------------------
         p = moveit_commander.PoseStamped()
         p.header.frame_id = self.robot.robot.get_planning_frame()
-        p.pose.position.x = 0.6
-        p.pose.position.y = 0.52
+        p.pose.position.x = 0.5743
+        p.pose.position.y = 0.5182
         p.pose.position.z = 0.07
-        self.robot.scene.add_box('OBJECT2', p, (0.06, 0.02, 0.06))
+        self.robot.scene.add_box('OBJECT2', p, (0.06, 0.002, 0.06))
         time.sleep(.5)
         self.box_name2 = 'OBJECT2'
 
         # #ADDING OBJECT2 ---------------------------------------------------
         p = moveit_commander.PoseStamped()
         p.header.frame_id = self.robot.robot.get_planning_frame()
-        p.pose.position.x = 0.3
-        p.pose.position.y = -.4
-        p.pose.position.z = .10
+        p.pose.position.x = 0.6916
+        p.pose.position.y = -.2132
+        p.pose.position.z = .102
         self.robot.scene.add_box('OBJECT3', p, (0.06, 0.02, 0.06))
         time.sleep(.5)
         self.box_name3 = 'OBJECT3'
@@ -232,6 +232,7 @@ class MES:
                     time.sleep(1.2)
                     if not real:
                         self.attach_box(i)
+                        time.sleep(0.5)
 
                 # Read product leave location details
                 idx = int(taak.split('-')[1]) - 1 
@@ -280,6 +281,7 @@ class MES:
                     time.sleep(1.2)
                     if not real:
                         self.detach_box(i)
+                        time.sleep(0.5)
                 # And go up again
                 self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
 
