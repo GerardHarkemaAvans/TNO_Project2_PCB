@@ -163,10 +163,17 @@ class MES:
     def go_to_cords(self):
         try:
             values = [float(x.get()) for x in self.display]
+            x, y, z, rx, ry, rz = values
         except Exception:
-            tkMessageBox.showerror('ERROR', 'Ongeldige coordinaten')
-            return
-        x, y, z, rx, ry, rz = values
+            try:
+                values = self.input_list.get().replace(' ', '').split(',')
+                if len(values) != 6:
+                    raise ValueError('Did not receive 6 values')
+                values = [float(x) for x in values]
+                x, y, z, rx, ry, rz = values
+            except Exception:
+                tkMessageBox.showerror('ERROR', 'Ongeldige coordinaten')
+                return
         print('Received ', values)
         self.robot.go_to_pose_goal(x, y, z, rx, ry, rz)
 
@@ -322,24 +329,26 @@ class MES:
         # Input boxes --------------------------------------------------------
         self.display = [Entry(self.root) for i in range(6)]
         [self.display[i].grid(row=i+2, column=1, sticky=W+E) for i in range(6)]
+        self.input_list = Entry(self.root)
+        self.input_list.grid(row=8, columnspan=2, sticky=W+E)
         Button(self.root, text='Go To', command=self.go_to_cords).grid(
-            row=8, columnspan=2, sticky=W+E)
+            row=9, columnspan=2, sticky=W+E)
 
         # TAKEN OVERZICHT ----------------------------------------------------
         taken = self.inhoud.split('\n')
         for idx, taak in enumerate(taken):
             Label(self.root, bg='red', text=taak.replace('_', ' ').replace(
-                '-', ' ')).grid(row=9+idx, columnspan=2, sticky=W+E)
+                '-', ' ')).grid(row=10+idx, columnspan=2, sticky=W+E)
         Button(self.root, text='Execute All Tasks', command=
-            self.execute_all_thread).grid(row=10+idx, columnspan=2, sticky=W+E)
+            self.execute_all_thread).grid(row=11+idx, columnspan=2, sticky=W+E)
 
         # GRIPPER BUTTONS ----------------------------------------------------
-        Label(self.root, text='Gripper control').grid(row=11+idx, sticky=W,
+        Label(self.root, text='Gripper control').grid(row=12+idx, sticky=W,
             columnspan=2)
         Button(self.root, text='open', command=lambda: self.control_gripper(100)
-            ).grid(row=12+idx, sticky=W+E, column=0)
+            ).grid(row=13+idx, sticky=W+E, column=0)
         Button(self.root, text='close', command=lambda: self.control_gripper(0)
-            ).grid(row=12+idx, sticky=W, column=1)
+            ).grid(row=13+idx, sticky=W, column=1)
 
         '''
         # BOXEN TOEVOEGEN ----------------------------------------------------
