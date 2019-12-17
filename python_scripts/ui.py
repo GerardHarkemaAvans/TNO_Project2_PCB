@@ -52,7 +52,10 @@ class MES:
         p.header.frame_id = self.robot.robot.get_planning_frame()
         p.pose.position.x = 0
         p.pose.position.y = 0
-        p.pose.position.z = 0  # correctie dat tafel lager staat
+        if ur5:
+            p.pose.position.z = -.06  # correctie dat tafel lager staat
+        elif panda:
+            p.pose.position.z = 0
         self.robot.scene.add_box('table', p, (1.5, 1.25, .01))
         time.sleep(.2)
 
@@ -170,7 +173,7 @@ class MES:
             self.add_box()
         for i, taak in enumerate(self.inhoud.split('\n')):
             Label(self.root, bg='red', text=taak.replace('_', ' ').replace(
-                '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
+                '-', ' ')).grid(row=10+i, columnspan=2, sticky=W+E)
         if gripper:
             self.control_gripper(100)  # always open gripper b4 starting
             time.sleep(gripper_time)
@@ -179,7 +182,7 @@ class MES:
             if taak.startswith('go_product'):
                 # Update label
                 Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
-                    '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
+                    '-', ' ')).grid(row=10+i, columnspan=2, sticky=W+E)
                 time.sleep(0.03)
 
                 # Read product approach location details
@@ -213,7 +216,7 @@ class MES:
 
                 # Read product leave location details
                 idx = int(taak.split('-')[1]) - 1 
-                product_location = self.robot.product_leave_loc[idx]
+                product_location = self.robot.product_leave_loc1[idx]
                 if len(product_location) == 3:
                     gx, gy, gz = product_location
                     grx, gry, grz = 3.14, 1.57, 0
@@ -221,10 +224,17 @@ class MES:
                     gx, gy, gz, grx, gry, grz = product_location
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
 
+                # Read product leave location2 details
+                idx = int(taak.split('-')[1]) - 1 
+                product_location = self.robot.product_leave_loc2[idx]
+                if len(product_location) == 6:
+                    gx, gy, gz, grx, gry, grz = product_location
+                    self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
+
             elif taak.startswith('go_placeloc'):
                 # Update label
                 Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
-                    '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
+                    '-', ' ')).grid(row=10+i, columnspan=2, sticky=W+E)
                 time.sleep(0.03)
 
                 # Read product location details
@@ -254,7 +264,7 @@ class MES:
                     'herkend\n' + taak)
             print(i, taak, gx, gy, gz, grx, gry, grz)  # Debug
             Label(self.root, bg='green', text=taak.replace('_', ' ').replace(
-                '-', ' '), fg='white').grid(row=9+i, columnspan=2, sticky=W+E)
+                '-', ' '), fg='white').grid(row=10+i, columnspan=2, sticky=W+E)
         pass
 
     def execute_all_thread(self):
