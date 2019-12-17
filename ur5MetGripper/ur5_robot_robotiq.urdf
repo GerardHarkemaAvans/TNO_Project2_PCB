@@ -356,7 +356,7 @@
     <joint name="world_joint" type="fixed">
         <parent link="world" />
         <child link="base_link" />
-        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0" />
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 1.15" />
     </joint>
     <link name="gripper_robotiq_arg2f_base_link">
         
