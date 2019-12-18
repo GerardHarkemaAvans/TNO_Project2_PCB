@@ -1,32 +1,23 @@
 #!/usr/bin/env python
 
-from trajectory_msgs.msg import JointTrajectoryPoint
-from trajectory_msgs.msg import JointTrajectory
 from moveit_ur5 import MoveGroupPythonInteface
-import geometry_msgs.msg
-import tf2_geometry_msgs
 import moveit_commander
-import moveit_msgs.msg
 import sensor_msgs.msg
 import tkMessageBox
 import numpy as np
 import subprocess
 import threading
-import random
 import roslib
 import rospy
-import copy
-import math
 import time
 import sys
 
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
 roslib.load_manifest('robotiq_2f_gripper_control')
-# from Robotiq2FGripperRtuNode import mainLoop
 
 
 GRIPPERPORT = '/dev/ttyUSB0'
-MAINLOOPRUNNING = False
+MAINLOOPRUNNING = False  # used to check if the gripper is initialized
 
 
 # Make this file compeditable on both python2 and python3
@@ -46,7 +37,6 @@ class MES:
         self.box_name2 = ''
         self.box_name3 = ''
 
-
         self.robot = MoveGroupPythonInteface(self.robot_name)
         self.eef_link = self.robot.group.get_end_effector_link()
 
@@ -62,7 +52,10 @@ class MES:
         p.header.frame_id = self.robot.robot.get_planning_frame()
         p.pose.position.x = 0
         p.pose.position.y = 0
-        p.pose.position.z = 0  # correctie dat tafel lager staat
+        if ur5:
+            p.pose.position.z = -.06  # correctie dat tafel lager staat
+        elif panda:
+            p.pose.position.z = 0
         self.robot.scene.add_box('table', p, (1.5, 1.25, .01))
         time.sleep(.2)
 
@@ -78,20 +71,9 @@ class MES:
         self.finger_pub = rospy.Publisher(
             '/move_group/fake_controller_joint_states',
             sensor_msgs.msg.JointState,
-            queue_size=20)
-
-        # if panda and not real:
-        #     time.sleep(1)
-        #     print('OPENING GRIPPER')
-        #     self.control_gripper(100)
-        #     time.sleep(1.5)
-        
+            queue_size=20)        
 
     def add_box(self):
-        box_name1 = self.box_name1
-        box_name2 = self.box_name2
-        box_name3 = self.box_name3
-
         #ADDING OBJECT1 ---------------------------------------------------
         p = moveit_commander.PoseStamped()
         p.header.frame_id = self.robot.robot.get_planning_frame()
@@ -123,81 +105,84 @@ class MES:
         self.box_name3 = 'OBJECT3'
     
     def attach_box(self, a):
-        box_name1 = self.box_name1
-        box_name2 = self.box_name2
-        box_name3 = self.box_name3
-        eef_link = self.eef_link
-
+        '''a is de index in de for-loop van de functie self.execute_all()
+        '''
         grasping_group = 'hand'
         touch_links = self.robot.robot.get_link_names(group=grasping_group)
 
         if a == 0:
-            self.robot.scene.attach_box(self.eef_link, box_name1,
+            self.robot.scene.attach_box(self.eef_link, self.box_name1,
             touch_links=touch_links)
-
-        if a == 2:
-            self.robot.scene.attach_box(self.eef_link, box_name2,
+        elif a == 2:
+            self.robot.scene.attach_box(self.eef_link, self.box_name2,
             touch_links=touch_links)
-
-        if a == 4:
-            self.robot.scene.attach_box(self.eef_link, box_name3,
+        elif a == 4:
+            self.robot.scene.attach_box(self.eef_link, self.box_name3,
             touch_links=touch_links)
-
-
+        else:
+            raise ValueError('bad input')
 
     def detach_box(self, b):
-        box_name1 = self.box_name1
-        box_name2 = self.box_name2
-        box_name3 = self.box_name3
-        eef_link = self.eef_link
-
+        '''b is de index in de for-loop van de functie self.execute_all()
+        '''
         if b == 1:
-            self.robot.scene.remove_attached_object(self.eef_link, box_name1)
+            self.robot.scene.remove_attached_object(self.eef_link, 
+                                                    self.box_name1)
+        elif b == 3:        
+            self.robot.scene.remove_attached_object(self.eef_link, 
+                                                    self.box_name2)
+        elif b == 5:
+            self.robot.scene.remove_attached_object(self.eef_link, 
+                                                    self.box_name3)
+        else:
+            raise ValueError('bad input')
 
-        if b == 3:        
-            self.robot.scene.remove_attached_object(self.eef_link, box_name2)
-
-        if b == 5:
-            self.robot.scene.remove_attached_object(self.eef_link, box_name3)
+    def add_objects(self):
+        x, y, z, dx, dy, dz = [x.get() for x in self.boxcoords]
+        p = moveit_commander.PoseStamped()
+        p.header.frame_id = self.robot.robot.get_planning_frame()
+        p.pose.position.x = float(x)
+        p.pose.position.y = float(y)
+        p.pose.position.z = float(z)
+        self.robot.scene.add_box(self.boxname.get(), p, (float(dx), float(dy), float(dz)))
+        time.sleep(.5)
+        print('Toegevoegd')
 
     def go_to_cords(self):
         try:
+            # try to read values from the ui in the loose boxes
             values = [float(x.get()) for x in self.display]
+            x, y, z, rx, ry, rz = values
         except Exception:
-            tkMessageBox.showerror('ERROR', 'Ongeldige coordinaten')
-            return
-        x, y, z, rx, ry, rz = values
+            try:
+                # else try to read values from the one input box
+                values = self.input_list.get().replace(' ', '').split(',')
+                if len(values) != 6:
+                    raise ValueError('Did not receive 6 values')
+                values = [float(x) for x in values]
+                x, y, z, rx, ry, rz = values
+            except Exception:
+                tkMessageBox.showerror('ERROR', 'Ongeldige coordinaten')
+                return
         print('Received ', values)
         self.robot.go_to_pose_goal(x, y, z, rx, ry, rz)
 
-    def go_up(self):
-        x = self.robot.group.get_current_pose().pose.position.x
-        y = self.robot.group.get_current_pose().pose.position.y
-        z = self.robot.group.get_current_pose().pose.position.z
-        if np.round(z, 3) != 0.3:
-            self.robot.go_to_pose_goal(x, y, 0.3, self.rx, self.ry, 
-                self.rz)
-
     def execute_all(self):
+        gripper_time = .8
         if not real:
-        	self.add_box()
+            self.add_box()
         for i, taak in enumerate(self.inhoud.split('\n')):
             Label(self.root, bg='red', text=taak.replace('_', ' ').replace(
-                '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
+                '-', ' ')).grid(row=10+i, columnspan=2, sticky=W+E)
         if gripper:
             self.control_gripper(100)  # always open gripper b4 starting
-            time.sleep(1.2)
+            time.sleep(gripper_time)
 
         for i, taak in enumerate(self.inhoud.split('\n')):
-            x = self.robot.group.get_current_pose().pose.position.x
-            y = self.robot.group.get_current_pose().pose.position.y
-            z = self.robot.group.get_current_pose().pose.position.z
-
-
             if taak.startswith('go_product'):
                 # Update label
                 Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
-                    '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
+                    '-', ' ')).grid(row=10+i, columnspan=2, sticky=W+E)
                 time.sleep(0.03)
 
                 # Read product approach location details
@@ -207,41 +192,49 @@ class MES:
                 product_location = self.robot.product_app_loc[idx]
                 if len(product_location) == 3:
                     gx, gy, gz = product_location
-                    grx, gry, grz = 3.14, 1.57, 0  # todo aanpassen voor panda
+                    # if no rx, ry, rz specified then approach product from top
+                    grx, gry, grz = 3.14, 1.57, 0
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
 
-                # Read product location details
+                # Read product location details and move to that location
                 idx = int(taak.split('-')[1]) - 1 
                 product_location = self.robot.product_locations[idx]
                 if len(product_location) == 3:
                     gx, gy, gz = product_location
-                    grx, gry, grz = 3.14, 1.57, 0  # todo aanpassen voor panda
+                    grx, gry, grz = 3.14, 1.57, 0
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
                 if gripper:
                     self.control_gripper(0)
-                    time.sleep(1.2)
+                    time.sleep(gripper_time)
                     if not real:
                         self.attach_box(i)
                         time.sleep(0.5)
 
                 # Read product leave location details
                 idx = int(taak.split('-')[1]) - 1 
-                product_location = self.robot.product_leave_loc[idx]
+                product_location = self.robot.product_leave_loc1[idx]
                 if len(product_location) == 3:
                     gx, gy, gz = product_location
-                    grx, gry, grz = 3.14, 1.57, 0  # todo aanpassen voor panda
+                    grx, gry, grz = 3.14, 1.57, 0
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
 
+                # Read product leave location2 details
+                idx = int(taak.split('-')[1]) - 1 
+                product_location = self.robot.product_leave_loc2[idx]
+                if len(product_location) == 6:
+                    gx, gy, gz, grx, gry, grz = product_location
+                    self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
+
             elif taak.startswith('go_placeloc'):
                 # Update label
                 Label(self.root, bg='orange', text=taak.replace('_', ' ').replace(
-                    '-', ' ')).grid(row=9+i, columnspan=2, sticky=W+E)
+                    '-', ' ')).grid(row=10+i, columnspan=2, sticky=W+E)
                 time.sleep(0.03)
 
                 # Read product location details
@@ -259,22 +252,20 @@ class MES:
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
                 if gripper:
                     self.control_gripper(100)
-                    time.sleep(1.2)
+                    time.sleep(gripper_time)
                     if not real:
                         self.detach_box(i)
                         time.sleep(0.5)
                 # And go up again
-                self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
+                self.robot.go_to_pose_goal(gx, gy, 0.5, grx, gry, grz)
 
             else:
                 tkMessageBox.showerror('ERROR', 'Devolgende regel is niet '
                     'herkend\n' + taak)
             print(i, taak, gx, gy, gz, grx, gry, grz)  # Debug
             Label(self.root, bg='green', text=taak.replace('_', ' ').replace(
-                '-', ' '), fg='white').grid(row=9+i, columnspan=2, sticky=W+E)
-        
-
-
+                '-', ' '), fg='white').grid(row=10+i, columnspan=2, sticky=W+E)
+        pass
 
     def execute_all_thread(self):
         thread = threading.Thread(target=self.execute_all)
@@ -289,77 +280,11 @@ class MES:
         print(str(pos2))
         tkMessageBox.showinfo('Joint Values', str(pos2))
 
-    def add_objects(self):
-        x, y, z, dx, dy, dz = [x.get() for x in self.boxcoords]
-        p = moveit_commander.PoseStamped()
-        p.header.frame_id = self.robot.robot.get_planning_frame()
-        p.pose.position.x = float(x)
-        p.pose.position.y = float(y)
-        p.pose.position.z = float(z)
-        self.robot.scene.add_box(self.boxname.get(), p, (float(dx), float(dy), float(dz)))
-        time.sleep(.5)
-        print('Toegevoegd')
-
-    def window(self):
-        self.root = Tk()
-        self.root.title('PCB Picker')
-
-        # HUIDIGE LOCATIE ----------------------------------------------------
-        Button(self.root, text='Go Home', command=self.robot.go_to_joint_state).grid(
-            sticky=W+E)
-        Button(self.root, text='Get pos', command=self.get_pos).grid(
-            sticky=W, row=0, column=1)
-        self.pos = StringVar(self.root)
-        Label(self.root, textvariable=self.pos).grid(column=1, sticky=W)
-
-        # USER INPUT ---------------------------------------------------------
-        Label(self.root, text='Geef hier een input').grid(row=1, columnspan=2, 
-            sticky=W)
-        for idx, elem in enumerate(['x', 'y', 'z', 'rx', 'ry', 'rz']):
-            # x=groen, y=rood, z=blauw
-            Label(self.root, text=elem).grid(row=2+idx, column=0, sticky=W)
-
-        # Input boxes --------------------------------------------------------
-        self.display = [Entry(self.root) for i in range(6)]
-        [self.display[i].grid(row=i+2, column=1, sticky=W+E) for i in range(6)]
-        Button(self.root, text='Go To', command=self.go_to_cords).grid(
-            row=8, columnspan=2, sticky=W+E)
-
-        # TAKEN OVERZICHT ----------------------------------------------------
-        taken = self.inhoud.split('\n')
-        for idx, taak in enumerate(taken):
-            Label(self.root, bg='red', text=taak.replace('_', ' ').replace(
-                '-', ' ')).grid(row=9+idx, columnspan=2, sticky=W+E)
-        Button(self.root, text='Execute All Tasks', command=
-            self.execute_all_thread).grid(row=10+idx, columnspan=2, sticky=W+E)
-
-        # GRIPPER BUTTONS ----------------------------------------------------
-        Label(self.root, text='Gripper control').grid(row=11+idx, sticky=W,
-            columnspan=2)
-        Button(self.root, text='open', command=lambda: self.control_gripper(100)
-            ).grid(row=12+idx, sticky=W+E, column=0)
-        Button(self.root, text='close', command=lambda: self.control_gripper(0)
-            ).grid(row=12+idx, sticky=W, column=1)
-
-        '''
-        # BOXEN TOEVOEGEN ----------------------------------------------------
-        Label(self.root, text='Box toevoegen').grid(row=13+idx, sticky=W, 
-            columnspan=2)
-        for idx2, elem in enumerate(['x', 'y', 'z', 'dx', 'dy', 'dz']):
-            Label(self.root, text=elem).grid(row=14+idx+idx2, sticky=W)
-        self.boxcoords = [Entry(self.root) for i in range(6)]
-        [self.boxcoords[idx2].grid(row=14+idx+idx2, column=1) for idx2 in range(6)]
-        Label(self.root, text='naam').grid(row=15+idx+idx2, column=0, sticky=W)
-        self.boxname = Entry(self.root)
-        self.boxname.grid(row=15+idx+idx2, column=1)
-        Button(self.root, text='Toevoegen', command=self.add_objects).grid(
-            row=17+idx+idx2, columnspan=2, sticky=W+E)
-        '''
-
-        self.root.mainloop()
-
-
     def control_gripper(self, action):
+        '''opens or closes the gripper.
+        action must be an int in the range 0 - 100, where 0 is fully closed
+        and 100 is fully open
+        '''
         global MAINLOOPRUNNING, pub
 
         try:
@@ -375,7 +300,7 @@ class MES:
                 MAINLOOPRUNNING = True
                 activate_gripper_thread()
                 pub = rospy.Publisher('Robotiq2FGripperRobotOutput', 
-                    outputMsg.Robotiq2FGripper_robot_output)
+                    outputMsg.Robotiq2FGripper_robot_output, queue_size=20)
 
                 command = outputMsg.Robotiq2FGripper_robot_output()
                 command.rACT = 1
@@ -404,8 +329,56 @@ class MES:
             jointstate.position += [value] + self.robot.group.get_current_joint_values()
             self.finger_pub.publish(jointstate)
 
+    def window(self):
+        self.root = Tk()
+        self.root.title('PCB Picker')
+
+        # HUIDIGE LOCATIE ----------------------------------------------------
+        Button(self.root, text='Go Home', command=self.robot.go_to_joint_state).grid(
+            sticky=W+E)
+        Button(self.root, text='Get pos', command=self.get_pos).grid(
+            sticky=W, row=0, column=1)
+        self.pos = StringVar(self.root)
+        Label(self.root, textvariable=self.pos).grid(column=1, sticky=W)
+
+        # USER INPUT ---------------------------------------------------------
+        Label(self.root, text='Geef hier een input').grid(row=1, columnspan=2, 
+            sticky=W)
+        for idx, elem in enumerate(['x', 'y', 'z', 'rx', 'ry', 'rz']):
+            # x=groen, y=rood, z=blauw
+            Label(self.root, text=elem).grid(row=2+idx, column=0, sticky=W)
+
+        # Input boxes --------------------------------------------------------
+        self.display = [Entry(self.root) for i in range(6)]
+        [self.display[i].grid(row=i+2, column=1, sticky=W+E) for i in range(6)]
+        self.input_list = Entry(self.root)
+        self.input_list.grid(row=8, columnspan=2, sticky=W+E)
+        Button(self.root, text='Go To', command=self.go_to_cords).grid(
+            row=9, columnspan=2, sticky=W+E)
+
+        # TAKEN OVERZICHT ----------------------------------------------------
+        taken = self.inhoud.split('\n')
+        for idx, taak in enumerate(taken):
+            Label(self.root, bg='red', text=taak.replace('_', ' ').replace(
+                '-', ' ')).grid(row=10+idx, columnspan=2, sticky=W+E)
+        Button(self.root, text='Execute All Tasks', command=
+            self.execute_all_thread).grid(row=11+idx, columnspan=2, sticky=W+E)
+
+        # GRIPPER BUTTONS ----------------------------------------------------
+        Label(self.root, text='Gripper control').grid(row=12+idx, sticky=W,
+            columnspan=2)
+        Button(self.root, text='open', command=lambda: self.control_gripper(100)
+            ).grid(row=13+idx, sticky=W+E, column=0)
+        Button(self.root, text='close', command=lambda: self.control_gripper(0)
+            ).grid(row=13+idx, sticky=W, column=1)
+
+        self.root.mainloop()
+
 
 def run_roslaunch1():
+    '''opens a roslaunch for gazebo (ur5) or rviz (panda)
+    this function is only executed when input on opening roslaunches is yes
+    '''
     if panda:
         command = 'roslaunch panda_moveit_config demo.launch'
     if ur5:
@@ -415,6 +388,9 @@ def run_roslaunch1():
 
 
 def run_roslaunch2():
+    '''opens a roslaunch which is needed for moveit commander to work
+    this function is only executed when input on opening roslaunches is yes
+    '''
     if panda:
         command = 'rosrun moveit_commander moveit_commander_cmdline.py'
     if ur5:
@@ -428,6 +404,10 @@ def run_roslaunch2():
 
 
 def roslaunch_thread():
+    '''executes the roslaunches in a thread
+    this is done because the roslaunches will otherwise keep the terminal
+    busy
+    '''
     thread1 = threading.Thread(target=run_roslaunch1)
     thread1.start()
     time.sleep(6)
@@ -438,6 +418,9 @@ def roslaunch_thread():
 
 
 def activate_gripper():
+    '''activates the Robitiq gripper. This must be done before the gripper
+    can be controlled
+    '''
     command = 'python Robotiq2FGripperRtuNode.py ' + GRIPPERPORT
     process = subprocess.Popen(command.split(' '))
     process.communicate()
@@ -450,10 +433,12 @@ def activate_gripper():
 
 
 def activate_gripper_thread():
+    '''executes the activate_gripper() function in a thread so it will not keep
+    the terminal busy
+    '''
     thread = threading.Thread(target=activate_gripper)
     thread.start()
     time.sleep(4)
-
 
 
 def main():
@@ -497,6 +482,6 @@ def main():
     app = MES(robot_name)
     app.window()
 
+
 if __name__ == '__main__':
     main()
-
