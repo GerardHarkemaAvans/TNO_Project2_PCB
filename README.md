@@ -1,5 +1,5 @@
 # Project Pick & Place voor TNO
-Dit is een project met een Pick & Place cobot. Er is een simulatie voor zowel de ur5 als de panda van Franka Emika.
+Dit is een project voor de minor Vision & Robotics 2019-2020 te Avans Breda. In dit project wordt er met een cobot gewerkt. Een cobot is een robot die bedoelt is om samen te werken met mensen in een gemeenschappelijke omgeving. Centraal bij dit project staat dat de software modulair moet zijn. Dat wilt zeggen dat de software op verschillende robots moet werken (onder andere ur5 & panda). Ook moet de robot verschillende halffabricaten op kunnen pakken. Het project is gerealiseert in ROS kinetic.
 
 
 # Installeer dit project:
@@ -93,6 +93,8 @@ youtu.be/bivQM2FoDJs
 
 
 # Debugging
+Hieronder staan enkele problemen waar wij tegenaan gelopen zijn tijdens het maken van het project, met daaronder een oplossing die voor ont geholpen heeft.
+
 Fout tijdens het importeren van pyassimp
 ```bash
 # Mogelijke fix 1
