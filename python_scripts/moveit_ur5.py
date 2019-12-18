@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 
-import sys
-import time
-import copy
-import rospy
 import moveit_commander
 import moveit_msgs.msg
-import geometry_msgs.msg
 from math import pi
+import rospy
+import time
+import sys
 
 
 
@@ -25,14 +23,15 @@ class MoveGroupPythonInteface(object):
             group_name = "manipulator"
         elif robot_name == 'panda':
             group_name = 'panda_arm'
-        # else:
-        #     print(robot_name + ' not regocnized')
+        else:
+            raise ValueError('robotname not recognized')
         self.group = moveit_commander.MoveGroupCommander(group_name)
-        self.display_trajectory_publisher = rospy.Publisher('/move_group/display_planned_path',
-                                                       moveit_msgs.msg.DisplayTrajectory,
-                                                       queue_size=20)
+        self.display_trajectory_publisher = rospy.Publisher(
+            '/move_group/display_planned_path',
+            moveit_msgs.msg.DisplayTrajectory,
+            queue_size=20)
         # PRODUCT PARAMETERS----------
-        ## All the inner lists must have 7 elements
+        ## All the inner lists must have 6 elements
         if robot_name == 'ur5':
             self.product_app_loc = [
                                 [.38, .5437, .3622, -1.57, 1.57, 0],
@@ -70,10 +69,15 @@ class MoveGroupPythonInteface(object):
                                 [.5743, .3982, .07, -1.57, -0.78, 0],
                                 [.6916, -.1132, .152, 2.356, 0.6, 0.6],
                             ]
-            self.product_leave_loc = [
+            self.product_leave_loc1 = [
                                 [.3678, .5182, .3, 3.14, 0, 0.78],
                                 [.5743, .3982, .2, -1.57, -0.78, 0],
                                 [.6916, -.0132, .3, 2.356, 0.6, 0.6],
+            ]
+            self.product_leave_loc2 = [
+                                [],
+                                [],
+                                [],
             ]
             self.place_locations = [
                                 [.66, 0, .13, 3.14, 0, 2.356],
@@ -89,60 +93,19 @@ class MoveGroupPythonInteface(object):
             coords.append(w)
         group.set_pose_target(coords)
 
-        ## Now, we call the planner to compute the plan and execute it.
-        plan = group.go(wait=True)
-        # Calling stop() ensures that there is no residual movement
+        # execute and wait till the robot finishes
+        group.go(wait=True)
+        # Calling stop() makes sure that there is no movement
         group.stop()
         group.clear_pose_targets()
-
-    def get_pose():
-        return self.group.get_current_pose().pose
 
     def go_to_joint_state(self):
         joint_goal = self.group.get_current_joint_values()
         joint_goal[1] = -.977
         self.group.go(joint_goal, wait=True)
 
-        if self.robot_name == 'ur5':
-            pass
-            ## todo dit nog werkend krijgen - lijkt erop alsof de box niet goed toegevoegd is
-            # p = moveit_commander.PoseStamped()
-            # p.header.frame_id = self.robot.get_planning_frame()
-            # p.pose.position.x = 0
-            # p.pose.position.y = 0
-            # p.pose.position.z = 1
-            # self.scene.add_box('Ground', p, (2,2,.15))
-            # print('Box added')
-
         joint_goal = self.group.get_current_joint_values()
         joint_goal[0] = .63
         joint_goal[2] = .609
         self.group.go(joint_goal, wait=True)
-
-        # joint_goal = self.group.get_current_joint_values()
-        # joint_goal[3] = 5.07
-        # joint_goal[4] = 4.712
-        # joint_goal[5] = -2.511
-        # self.group.go(joint_goal, wait=True)
-
         self.group.stop()
-
-
-def temp():
-    robot = MoveGroupPythonInteface()
-    while True:
-        try:
-            x = float(raw_input('x: '))
-            y = float(raw_input('y: '))
-            z = float(raw_input('z: '))
-            robot.go_to_pose_goal(x, y, z)
-        except Exception:
-            print('ongeldige input, probeer opnieuw')
-
-
-def main():
-    robot = MoveGroupPythonInteface()
-    robot.go_to_pose_goal(.5, .5, .5)
-
-if __name__ == '__main__':
-    temp()
