@@ -3,7 +3,7 @@ Dit is een project voor de minor Vision & Robotics 2019-2020 te Avans Breda. In 
 
 
 # Resultaten
-[youtu.be/bivQM2FoDJs](youtu.be/bivQM2FoDJs)
+[youtu.be/bivQM2FoDJs](https://youtu.be/bivQM2FoDJs)
 
 
 # Installeer dit project:
