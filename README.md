@@ -2,6 +2,10 @@
 Dit is een project voor de minor Vision & Robotics 2019-2020 te Avans Breda. In dit project wordt er met een cobot gewerkt. Een cobot is een robot die bedoelt is om samen te werken met mensen in een gemeenschappelijke omgeving. Centraal bij dit project staat dat de software modulair moet zijn. Dat wilt zeggen dat de software op verschillende robots moet werken (onder andere ur5 & panda). Ook moet de robot verschillende halffabricaten op kunnen pakken. Het project is gerealiseert in ROS kinetic.
 
 
+# Resultaten
+[youtu.be/bivQM2FoDJs](youtu.be/bivQM2FoDJs)
+
+
 # Installeer dit project:
 Installeer de volgende afhankelijkheden:
 ```bash
@@ -87,9 +91,6 @@ Wrist3 | -3.15 | 3.15 | -180.48 | 180.48
 
 Deze limieten hebben meerdere functies. De belangrijkste functie is dat het de oplosruimte verkleint, wat tot gevolg heeft dat de robot op een veilige manier van a naar b gaat. Een andere bijwerking van het verkleinen van de oplosruimte is dat het minder rekenkracht kost om een weg voor de robot te berekenen.
 Let op, als de robot in een positie staat die niet binnen de hierboven genoemde limieten vallen zal de planner geen weg kunnen plannen. Zorg dus altijd dat de startpositie binnen de limieten valt.
-
-# Resultaten
-youtu.be/bivQM2FoDJs
 
 
 # Debugging
