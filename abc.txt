@@ -1,8 +1,0 @@
-git push https://github.com/NielsBos1996/TNO_Project2_PCB.git
-
-source ./devel/setup.bash 
-
-roslaunch ur_modern_driver ur5_bringup.launch robot_ip:=10.42.0.175
-
-https://github.com/olinrobotics/irl/wiki/Tutorial:-Setting-up-and-running-the-UR5-Robotic-Arm
-
