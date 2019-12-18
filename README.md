@@ -39,7 +39,7 @@ Open het bestand .../ur5_moveit_config/config/controllers.yaml en vervang de 3e 
 
 
 # Verbinden met de ur5
-Stel de DNS van de ur5 in op `192.168.1.30`. Kijk vervolgens wat de naam is van de ehternetadapter op de pc met het command `ifconfig` (vaak lijkt het op `enp4s0f2`). 
+Stel de DNS van de ur5 in op `192.168.1.30`. Kijk vervolgens wat de naam is van de ehternetadapter op de pc met het command `ifconfig` (vaak lijkt het op `enp4s0f2`). Stop de ethernet kabel van de ur5 en de usb kabel van de gripper in de pc. 
 ```bash
 # Stel nu in dat de pc gaat luisteren naar packets op het kanaal `192.168.1.30`
 sudo ifconfig `ethernetnaam` 192.168.1.30 netmask 255.255.255.0
@@ -47,9 +47,32 @@ sudo ifconfig `ethernetnaam` 192.168.1.30 netmask 255.255.255.0
 # En verbind met de ur5
 roslaunch ur_robot_driver ur5_bringup.launch robot_ip:=192.168.1.102
 
+# Start nu het bestand `urcapexternalcontrol.urp` op de ur5
+# Start planning launch file
+roslaunch ur5_moveit_config ur5_moveit_planning_execution.launch limited:=true
+
+# Nu kan de interface gestart worden
+cd ~/catkin_ws/src/TNO_Project2_PCB/python_scripts/
+python ui.py
+
+# OPTIONEEL start rviz om de echte hardware in een simulatie te hebben
+roslaunch ur5_moveit_config moveit_rviz.launch config:=true
 ```
 
-Stop de ethernet kabel van de ur5 en de usb kabel van de gripper in de pc. 
+
+# Verbinden met de gripper
+Stop de usb van de gripper in de pc. Controlleer in welke port de gripper gevonden is. Dit kan met het command `ls /dev | grep USB`. Waarschijnlijk is het zoiets als `/dev/ttyUSB0`.
+```bash
+# Zorg dat de gebruiker in de group doulout zit
+sudo usermod -a -G dialout YOURUSERNAME
+
+# Start de driver van de gripper
+cd ~/catkin_wc/src/TNO_Project2_PCB/python_scripts/
+python Robotiq2FGripperRtuNodepy controller_path
+
+# Start interface voor de gripper
+rosrun robotiq_2f_gripper_control Robotiq2FGripperSimpleController.py
+```
 
 
 # Gewrichten limieten
@@ -70,6 +93,28 @@ youtu.be/bivQM2FoDJs
 
 
 # Debugging
+Fout tijdens het importeren van pyassimp
+```bash
+# Mogelijke fix 1
+pip install -U pyassimp
+
+# Mogelijke fix 2
+sudo dpkg --remove --force-depends python-pyassimp
+sudo -H pip install pyassimp
+```
+
+Could not find a package configuration file provided by "industrial_msgs"
+```bash
+sudo apt install --reinstall ros-kinetic-industrial-msgs
+```
+
+The following packages have unmet dependencies:
+    libaria-dev: Depends: libaria2v5 ...
+```bash
+sudo apt purge libaria-dev
+```
+
+
 
 
 # Autheurs:
