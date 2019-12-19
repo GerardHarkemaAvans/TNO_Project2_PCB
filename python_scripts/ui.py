@@ -11,6 +11,7 @@ import roslib
 import rospy
 import time
 import sys
+import os
 
 from robotiq_2f_gripper_control.msg import _Robotiq2FGripper_robot_output as outputMsg
 roslib.load_manifest('robotiq_2f_gripper_control')
@@ -196,6 +197,7 @@ class MES:
                     grx, gry, grz = 3.14, 1.57, 0
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
+                log('Going to: ' + str(product_location))
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
 
                 # Read product location details and move to that location
@@ -206,6 +208,7 @@ class MES:
                     grx, gry, grz = 3.14, 1.57, 0
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
+                log('Going to: ' + str(product_location))
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
                 if gripper:
                     self.control_gripper(0)
@@ -222,6 +225,7 @@ class MES:
                     grx, gry, grz = 3.14, 1.57, 0
                 else:
                     gx, gy, gz, grx, gry, grz = product_location
+                log('Going to: ' + str(product_location))
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
 
                 # Read product leave location2 details
@@ -229,6 +233,7 @@ class MES:
                 product_location = self.robot.product_leave_loc2[idx]
                 if len(product_location) == 6:
                     gx, gy, gz, grx, gry, grz = product_location
+                    log('Going to: ' + str(product_location))
                     self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
 
             elif taak.startswith('go_placeloc'):
@@ -247,6 +252,7 @@ class MES:
                     gx, gy, gz, grx, gry, grz = product_location
 
                 # First go above the product
+                log('Going to: ' + str(product_location))
                 self.robot.go_to_pose_goal(gx, gy, 0.3, grx, gry, grz)
                 # And go down now
                 self.robot.go_to_pose_goal(gx, gy, gz, grx, gry, grz)
@@ -256,8 +262,22 @@ class MES:
                     if not real:
                         self.detach_box(i)
                         time.sleep(0.5)
-                # And go up again
+                # And go to home position
                 self.robot.go_to_pose_goal(gx, gy, 0.5, grx, gry, grz)
+                # Go to home and wait till operator gives permition to continue
+                if i == 1 or i == 5:
+                    print('NU IS I 1 OF 3')
+                    # different rotations to prevent unneeded rotation
+                    self.robot.go_to_pose_goal(.45, 0, 0.5, 3.14, 1.57, 3.14)
+                else:
+                    self.robot.go_to_pose_goal(.45, 0, 0.5, 3.14, 1.57, 0)
+                resp = tkMessageBox.askquestion('question', 
+                    'Placed correctly and continue?')
+                if resp == 'no':
+                    log('Error placing product (operator feedback)')
+                    raise NameError('niet goed geplaatst')
+                else:
+                    log('Product placed correctly (operator feedback)')
 
             else:
                 tkMessageBox.showerror('ERROR', 'Devolgende regel is niet '
@@ -265,7 +285,6 @@ class MES:
             print(i, taak, gx, gy, gz, grx, gry, grz)  # Debug
             Label(self.root, bg='green', text=taak.replace('_', ' ').replace(
                 '-', ' '), fg='white').grid(row=10+i, columnspan=2, sticky=W+E)
-        pass
 
     def execute_all_thread(self):
         thread = threading.Thread(target=self.execute_all)
@@ -373,6 +392,13 @@ class MES:
             ).grid(row=13+idx, sticky=W, column=1)
 
         self.root.mainloop()
+
+def log(s):
+    if not os.path.isfile(os.environ['HOME'] + '/Documents/pcb_log.txt'):
+        open(os.environ['HOME'] + '/Documents/pcb_log.txt', 'a').close()
+        print('Created logfile in ~/Documents/')
+    with open(os.environ['HOME'] + '/Documents/pcb_log.txt', 'a') as file:
+        file.write('['+str(time.time())+'] ' + str(s) + '\n')
 
 
 def run_roslaunch1():
