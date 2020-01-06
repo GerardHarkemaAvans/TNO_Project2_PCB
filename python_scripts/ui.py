@@ -265,12 +265,14 @@ class MES:
                 # And go to home position
                 self.robot.go_to_pose_goal(gx, gy, 0.5, grx, gry, grz)
                 # Go to home and wait till operator gives permition to continue
+                gry = 0 if self.robot_name == 'panda' else 1.57
+                print('Robotname ' + self.robot_name)
                 if i == 1 or i == 5:
-                    print('NU IS I 1 OF 3')
                     # different rotations to prevent unneeded rotation
-                    self.robot.go_to_pose_goal(.45, 0, 0.5, 3.14, 1.57, 3.14)
+                    self.robot.go_to_pose_goal(.45, 0, 0.5, 3.14, gry, 3.14)
                 else:
-                    self.robot.go_to_pose_goal(.45, 0, 0.5, 3.14, 1.57, 0)
+                    self.robot.go_to_pose_goal(.45, 0, 0.5, 3.14, gry, 0)
+                
                 resp = tkMessageBox.askquestion('question', 
                     'Placed correctly and continue?')
                 if resp == 'no':
