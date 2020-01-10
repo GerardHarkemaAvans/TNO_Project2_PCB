@@ -42,6 +42,16 @@ Verplaats het bestand .../TNO_Project2_PCB/config/controllers.yaml naar .../ur5_
 Open het bestand .../ur5_moveit_config/config/controllers.yaml en vervang de 3e regel van het bestand voor `action_ns: scaled_pos_traj_controller/follow_joint_trajectory`.
 
 
+# De interface
+![](https://i.imgur.com/pTPvUBl.png)
+
+Het grootste gedeelte van de interface spreekt voor zich. De knop `go home` wordt gebruikt om de ur5 in een simulatie uit de startpositie te krijgen. Het is daarom ook af te raden deze knop te gebruiken bij een echte robot. 
+De knop `get pos` kan gebruikt worden om de huidige positie van een robot op te vragen. De respons is zowel de joint limits als de x,y,z,rx,ry,rz van de robot.
+De input van x, y, z, rz, ry, rz is ervoor om de robot naar een positie naar keuze te sturen. Dit is handig voor het calibreren van de robot. 
+In het tweede gedeelte van de interface staan de taken die uitgevoerd moeten worden. Deze taken worden uitgelezen uit het bestand python_scripts/taken.txt. Taken die (nog) niet uitgevoerd zijn hebben een rode label. Zodra het script begint met het uitvoeren van de taak verandert de label naar geel. Zodra het script klaar is met de taak wordt de label groen. Er kan nooit meer dan een label tegelijk geel zijn.
+
+
+
 # Verbinden met de ur5
 Stel de DNS van de ur5 in op `192.168.1.30`. Kijk vervolgens wat de naam is van de ehternetadapter op de pc met het command `ifconfig` (vaak lijkt het op `enp4s0f2`). Stop de ethernet kabel van de ur5 en de usb kabel van de gripper in de pc. 
 ```bash
